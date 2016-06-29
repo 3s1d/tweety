@@ -34,3 +34,5 @@
 
 # eagle
 layout/*#*
+layout/*.pro
+
