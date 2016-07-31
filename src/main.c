@@ -15,6 +15,7 @@
 #include "ms5637.h"
 #include "piezo.h"
 #include "button.h"
+#include "climb.h"
 
 
 
@@ -40,24 +41,22 @@ int main(void)
 	}
 
 
-
-	uint16_t freq = 3000;
-
 	while(1)
 	{
 		while(!btn_pressed());
 
-//		int32_t p = ms5637_get_pressure();
-//		float baroalt = (1.0f - pow((float)p/101325.0f, 0.190295f)) * 4433000.0f; //centimeter
+		const int32_t p_pa = ms5637_get_pressure();
+		const int32_t alt_cm = ms5637_p2alt(p_pa);		//10ms @ 1Mhz
+		const float climb_ms = climb_update(alt_cm);
 
-		p_set(freq);
+
+		if(climb_ms > 0.0f)
+			_delay_us(99);
+		else
+			_delay_us(100);
 		_delay_ms(200);
 		p_off();
 		_delay_ms(200);
-
-		freq /= 2;
-		if(freq < 300)
-			freq = 3000;
 	}
 	return 1;
 }
