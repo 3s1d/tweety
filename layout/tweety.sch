@@ -8676,6 +8676,7 @@ Standard SMD solder jumper. Used to automate production. Two varients : Normally
 <text x="25.4" y="114.3" size="1.778" layer="91">todo jumper</text>
 <text x="10.16" y="60.96" size="1.778" layer="91">DISABLE PULLUP
 after evaluation</text>
+<text x="55.88" y="124.46" size="1.778" layer="91">todo: pull down?</text>
 </plain>
 <instances>
 <instance part="FRAME1" gate="G$1" x="0" y="0"/>
