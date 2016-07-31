@@ -14,6 +14,8 @@
 #include "TWI_Master.h"
 #include "ms5637.h"
 
+#include "debug.h"
+
 uint16_t c[7];	//identical to C1..C6
 
 int8_t ms5637_init(void)
@@ -50,6 +52,8 @@ int8_t ms5637_init(void)
 		c[i] = ((uint16_t)messageBuf[1]) << 8;
 		c[i] |= messageBuf[2];
 	}
+
+	debug_put((uint8_t *)c, 7*2);
 
 	return 0;
 }
