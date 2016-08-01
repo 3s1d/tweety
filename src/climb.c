@@ -20,8 +20,6 @@ uint8_t climb_buf_idx = 0;
 
 int32_t d1,d2;
 
-/* we are using linear regression here */
-
 /* first */
 ISR(TIMER0_COMPB_vect)
 {
@@ -58,7 +56,7 @@ ISR(TIMER0_COMPA_vect)
 	//debug_put((uint8_t *) &alt_cm, 4);
 }
 
-int64_t LR_den;
+int32_t LR_den;
 void climb_init(void)
 {
 	while(ms5637_init() != 0)
@@ -90,8 +88,8 @@ void climb_init(void)
 //	LR_den *= 100.0f;				//unit of altitude is cm
 }
 
-
-int32_t climb_get(void)
+/* we are using linear regression here */
+int16_t climb_get(void)
 {
 	static int32_t climb;
 
@@ -104,17 +102,16 @@ int32_t climb_get(void)
 		sei();
 
 		avg_alt += buf;
-
 	}
 	avg_alt /= CLIMB_SAMPLES;
 	debug_put((uint8_t *) &avg_alt, 3);
 
 	/* compute LR numerator */
-	int64_t LR_num = 0;
+	int32_t LR_num = 0;
 	uint8_t idx = climb_buf_idx;
 	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)		//todo optimize
 	{
-		/* first increasing gives us a little time buffer */
+		/* first increasing, gives us a little time buffer */
 		if(++idx >= CLIMB_SAMPLES)
 			idx = 0;
 
@@ -125,9 +122,9 @@ int32_t climb_get(void)
 		LR_num += ((int32_t)i-LR_x_cross) * (buf - avg_alt);
 	}
 
-	/* average climb and migrate from cm to m/s (due to LR_den 100 factor ) */
-	climb = (LR_num*CLIMB_SAMPLES_PER_SEC) / LR_den;
-	//climb /= 2;
+	/* average climb and migrate */
+	climb += (LR_num*CLIMB_SAMPLES_PER_SEC) / LR_den;
+	climb /= 2;
 
-	return climb;
+	return (int16_t) climb;
 }

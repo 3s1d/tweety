@@ -39,9 +39,9 @@ int main(void)
 	{
 //		while(!btn_pressed());
 
-		const int32_t climb_cms = climb_get();
+		const int16_t climb_cms = climb_get();
 
-		debug_put((uint8_t *) &climb_cms, sizeof(uint32_t));
+		debug_put((uint8_t *) &climb_cms, sizeof(uint16_t));
 
 //		if(climb_ms > 0.0f)
 //			_delay_us(99);

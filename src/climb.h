@@ -19,6 +19,6 @@
 
 void climb_init(void);
 
-int32_t climb_get(void);
+int16_t climb_get(void);
 
 #endif /* CLIMB_H_ */
