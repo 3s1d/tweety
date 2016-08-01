@@ -20,7 +20,7 @@ uint16_t c[7];	//identical to C1..C6
 
 int8_t ms5637_init(void)
 {
-	unsigned char messageBuf[4];
+	uint8_t messageBuf[4];
 
 	/* enable power */
 	OUTPUT(MS5637_PWR_PIN);
@@ -42,7 +42,7 @@ int8_t ms5637_init(void)
 		messageBuf[1] = CMD_PROM_READ(i);      					// The first byte is used for commands.
 		TWI_Start_Transceiver_With_Data(messageBuf, 2);
 
-		//return value
+		/* get value */
 		messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TRUE<<TWI_READ_BIT);
 		TWI_Start_Transceiver_With_Data(messageBuf, 3);
 
@@ -50,7 +50,7 @@ int8_t ms5637_init(void)
 			return -1;
 
 		c[i] = ((uint16_t)messageBuf[1]) << 8;
-		c[i] |= messageBuf[2];
+		c[i] += messageBuf[2];
 	}
 
 	debug_put((uint8_t *)c, 7*2);
@@ -105,13 +105,11 @@ uint32_t takeReading(uint8_t trigger_cmd)
 int32_t ms5637_get_pressure(void)
 {
 	int32_t d2 = takeReading(CMD_START_D2);
-
 	if(d2 == 0)
 		return 0;
 
-	int64_t dt = d2 - c[5] * (1L<<8);
-
-	int32_t temp = 2000 + (dt * c[6]) / (1L<<23);
+	int32_t dt = d2 - ((uint32_t)c[5]<<8);
+	int32_t temp = 2000 + (int32_t)(((int64_t)dt * (uint64_t)c[6])>>23);
 
 	/* Second order temperature compensation */
 	//int64_t t2;
@@ -131,8 +129,8 @@ int32_t ms5637_get_pressure(void)
 	if(d1 == 0)
 		return 0;
 
-	int64_t off = c[2] * (1LL<<17) + (c[4] * dt) / (1LL<<6);
-	int64_t sens = c[1] * (1LL<<16) + (c[3] * dt) / (1LL<<7);
+	int64_t off = ((uint64_t)c[2]<<17) + ((dt * ((uint64_t)c[4]))>>6);
+	int64_t sens = ((uint64_t)c[1]<<16) + ((dt * ((uint64_t)c[3]))>>7);
 
 	/* Second order temperature compensation for pressure */
 	if(temp < 2000)
@@ -140,8 +138,8 @@ int32_t ms5637_get_pressure(void)
 		/* Low temperature */
 		int32_t tx = temp-2000;
 		tx *= tx;
-		int32_t off2 = 61 * tx / (1<<4);
-		int32_t sens2 = 29 * tx / (1<<4);
+		int32_t off2 = (61 * tx) >> 4;
+		int32_t sens2 = (29 * tx) >> 4;
 		if(temp < -1500)
 		{
 			/* Very low temperature */
@@ -154,5 +152,5 @@ int32_t ms5637_get_pressure(void)
 		sens -= sens2;
 	}
 
-	return ((int64_t)d1 * sens/(1LL<<21) - off) / (1LL << 15);
+	return ((((int64_t)d1 * sens)>>21) - off) >> 15;
 }

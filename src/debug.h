@@ -17,6 +17,8 @@
 
 void debug_put(uint8_t *buf, uint8_t length);
 
+#else
+#define debug_put(w, l)
 #endif
 
 #endif /* DEBUG_H_ */
