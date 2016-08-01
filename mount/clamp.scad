@@ -25,7 +25,7 @@ module clamp_half()
                 cube([16, 1.6, 5]);
 
             translate([0,0,10])
-                cube([16,11.5, 1.6]);
+                cube([16,10.5, 1.6]);
 
             teeth([0,29.5/2,2]);
             
@@ -33,15 +33,17 @@ module clamp_half()
                 rotate(90, [0,1,0])
                     difference()
                     {
-                        cylinder(r=8.5, h=16);
-                        cylinder(r=6.9, h=16);
-                        translate([-1, -9, 0])
-                            #cube([10,9,18]);
+                        cylinder(r=9.5, h=16);
+                        cylinder(r=7.9, h=16);
+                        translate([-1, -10, 0])
+                            #cube([9,10,18]);
+                        translate([-1, -14, 0])
+                            #cube([12,10,18]);
                     }
                     
             translate([11, 0, 11.5])
                     rotate(90, [1,0,0])
-                        cylinder(r=1.5, h=11);
+                        cylinder(r=1.5, h=10);
        }
        translate([16/2-2-0.5, 0,0])
             cylinder(r=4, h=20);
