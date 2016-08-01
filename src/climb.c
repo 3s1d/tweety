@@ -81,7 +81,7 @@ void climb_init(void)
 
 	//todo
 	LR_den = 0;
-	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)
+	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)						//todo limit 0 and int64_t??
 	{
 		LR_den += ((int64_t)i-LR_x_cross) * ((int64_t)i-LR_x_cross);
 	}
@@ -104,12 +104,12 @@ int16_t climb_get(void)
 		avg_alt += buf;
 	}
 	avg_alt /= CLIMB_SAMPLES;
-	debug_put((uint8_t *) &avg_alt, 3);
+	//debug_put((uint8_t *) &avg_alt, 3);
 
 	/* compute LR numerator */
 	int32_t LR_num = 0;
 	uint8_t idx = climb_buf_idx;
-	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)		//todo optimize
+	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)		//todo optimize, todo limit 0??/
 	{
 		/* first increasing, gives us a little time buffer */
 		if(++idx >= CLIMB_SAMPLES)
