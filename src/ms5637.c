@@ -29,8 +29,8 @@ int8_t ms5637_init(void)
 
 	TWI_Master_Initialise();
 
-	messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (FALSE<<TWI_READ_BIT);		// The first byte must always consists of General Call code or the TWI slave address.
-	messageBuf[1] = CMD_RESET;            						// The first byte is used for commands.
+	messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TWI_WRITE<<TWI_READ_BIT);
+	messageBuf[1] = CMD_RESET;
 	TWI_Start_Transceiver_With_Data(messageBuf, 2);
 
 	if(TWI_Get_State_Info() != TWI_NO_STATE)
@@ -38,19 +38,19 @@ int8_t ms5637_init(void)
 
 	for(uint8_t i = 0; i < 7; i++)
 	{
-		messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (FALSE<<TWI_READ_BIT);	// The first byte must always consists of General Call code or the TWI slave address.
-		messageBuf[1] = CMD_PROM_READ(i);      					// The first byte is used for commands.
+		messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TWI_WRITE<<TWI_READ_BIT);
+		messageBuf[1] = CMD_PROM_READ(i);
 		TWI_Start_Transceiver_With_Data(messageBuf, 2);
 
 		/* get value */
-		messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TRUE<<TWI_READ_BIT);
+		messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TWI_READ<<TWI_READ_BIT);
 		TWI_Start_Transceiver_With_Data(messageBuf, 3);
 
 		if(!TWI_Get_Data_From_Transceiver(messageBuf, 3))
 			return -1;
 
 		c[i] = ((uint16_t)messageBuf[1]) << 8;
-		c[i] += messageBuf[2];
+		c[i] |= messageBuf[2];
 	}
 
 	debug_put((uint8_t *)c, 7*2);
@@ -69,42 +69,37 @@ void ms5637_deinit()
 }
 
 
-uint32_t takeReading(uint8_t trigger_cmd)
+uint32_t ms5637_get_reading_start_next(uint8_t next_cmd)
 {
 	unsigned char messageBuf[4];
 
-	/* start conversion */
-	messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (FALSE<<TWI_READ_BIT); 	// The first byte must always consists of General Call code or the TWI slave address.
-	messageBuf[1] = trigger_cmd;           					 // The first byte is used for commands.
-	TWI_Start_Transceiver_With_Data(messageBuf, 2);
-
-	/* wait for conversion to be ready */
-	_delay_ms(OSR_8192_TIME);
-
 	/* read conversion */
-	messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (FALSE<<TWI_READ_BIT); 	// The first byte must always consists of General Call code or the TWI slave address.
-	messageBuf[1] = CMD_READ_ADC;      					 // The first byte is used for commands.
+	messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TWI_WRITE<<TWI_READ_BIT);
+	messageBuf[1] = CMD_READ_ADC;
 	TWI_Start_Transceiver_With_Data(messageBuf, 2);
 
 	/* get value */
-	messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TRUE<<TWI_READ_BIT);
+	messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TWI_READ<<TWI_READ_BIT);
 	TWI_Start_Transceiver_With_Data(messageBuf, 4);
 
 	if(!TWI_Get_Data_From_Transceiver(messageBuf, 4))
 		return 0;
 
-	//sometime 1st try fails??
-
 	uint32_t result = (uint32_t)messageBuf[1] << 16;
 	result |= (uint32_t)messageBuf[2] << 8;
 	result |= messageBuf[3];
+
+	/* start conversion */
+	messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TWI_WRITE<<TWI_READ_BIT);
+	messageBuf[1] = next_cmd;
+	TWI_Start_Transceiver_With_Data(messageBuf, 2);
 
 	return result;
 }
 
 int32_t ms5637_get_pressure(void)
 {
-	int32_t d2 = takeReading(CMD_START_D2);
+	int32_t d2 = ms5637_get_reading_start_next(CMD_START_D1);
 	if(d2 == 0)
 		return 0;
 
@@ -125,7 +120,7 @@ int32_t ms5637_get_pressure(void)
 	//}
 	//temperature = (float)(temp - t2) / 100;
 
-	int32_t d1 = takeReading(CMD_START_D1);
+	int32_t d1 = ms5637_get_reading_start_next(CMD_START_D2);
 	if(d1 == 0)
 		return 0;
 

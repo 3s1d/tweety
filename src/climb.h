@@ -17,6 +17,8 @@
 #define LR_den				4940600.0f		//todo
 					//sum((i-LR_x_cross)^2)*100 from 0 to CLIMB_SAMPLES-1, todo: start from 1 ??
 
+void climb_init(void);
+
 float climb_update(int32_t alt_cm);
 
 #endif /* CLIMB_H_ */

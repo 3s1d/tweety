@@ -84,11 +84,14 @@ unsigned char TWI_Get_Data_From_Transceiver( unsigned char *, unsigned char );
 /****************************************************************************
   Bit and byte definitions
 ****************************************************************************/
-#define TWI_READ_BIT  0       // Bit position for R/W bit in "address byte".
-#define TWI_ADR_BITS  1       // Bit position for LSB of the slave address bits in the init byte.
+#define TWI_READ_BIT  	0       // Bit position for R/W bit in "address byte".
+#define TWI_ADR_BITS  	1       // Bit position for LSB of the slave address bits in the init byte.
 
-#define TRUE          1
-#define FALSE         0
+#define TRUE          	1
+#define FALSE         	0
+
+#define TWI_READ	1
+#define TWI_WRITE	0
 
 /****************************************************************************
   TWI State codes

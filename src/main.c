@@ -33,16 +33,9 @@ int main(void)
 
 	btn_init();
 	p_init();
+	climb_init();
 
-	//todo
-	while(ms5637_init() != 0)
-	{
-		ms5637_deinit();
-		p_set(1000);
-		_delay_ms(10);
-		p_off();
-		_delay_ms(100);
-	}
+
 
 
 	while(1)
@@ -53,7 +46,7 @@ int main(void)
 		const int32_t alt_cm = ms5637_p2alt(p_pa);		//10ms @ 1Mhz
 		const float climb_ms = climb_update(alt_cm);
 
-		debug_put((uint8_t *) &p_pa, sizeof(uint32_t));
+//		debug_put((uint8_t *) &p_pa, sizeof(uint32_t));
 
 		if(climb_ms > 0.0f)
 			_delay_us(99);

@@ -28,6 +28,8 @@
 int8_t ms5637_init(void);
 void ms5637_deinit();
 
+uint32_t ms5637_get_reading_start_next(uint8_t next_cmd);
+
 int32_t ms5637_get_pressure(void);
 
 #endif /* MS5637_H_ */
