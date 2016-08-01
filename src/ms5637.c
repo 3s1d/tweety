@@ -20,37 +20,35 @@ uint16_t c[7];	//identical to C1..C6
 
 int8_t ms5637_init(void)
 {
-	uint8_t messageBuf[4];
+	uint8_t messageBuf[2];
 
 	/* enable power */
 	OUTPUT(MS5637_PWR_PIN);
 	SET(MS5637_PWR_PIN);
 	_delay_ms(50);
 
-	TWI_Master_Initialise();
+	/* start TWI */
+	TWIM_Init(TWI_FULL_SPEED);
 
-	messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TWI_WRITE<<TWI_READ_BIT);
-	messageBuf[1] = CMD_RESET;
-	TWI_Start_Transceiver_With_Data(messageBuf, 2);
-
-	if(TWI_Get_State_Info() != TWI_NO_STATE)
+	/* execute reset */
+	messageBuf[0] = CMD_RESET;
+	if(TWIM_write(MS5637_ADDR, messageBuf, 1) != TRUE)
 		return -1;
 
+	/* read prom */
 	for(uint8_t i = 0; i < 7; i++)
 	{
-		messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TWI_WRITE<<TWI_READ_BIT);
-		messageBuf[1] = CMD_PROM_READ(i);
-		TWI_Start_Transceiver_With_Data(messageBuf, 2);
-
-		/* get value */
-		messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TWI_READ<<TWI_READ_BIT);
-		TWI_Start_Transceiver_With_Data(messageBuf, 3);
-
-		if(!TWI_Get_Data_From_Transceiver(messageBuf, 3))
+		/* set register for read */
+		messageBuf[0] = CMD_PROM_READ(i);
+		if(TWIM_write(MS5637_ADDR, messageBuf, 1) != TRUE)
 			return -1;
 
-		c[i] = ((uint16_t)messageBuf[1]) << 8;
-		c[i] |= messageBuf[2];
+		/* get value */
+		if(TWIM_read(MS5637_ADDR, messageBuf, 2) != TRUE)
+			return -1;
+
+		c[i] = ((uint16_t)messageBuf[0]) << 8;
+		c[i] |= messageBuf[1];
 	}
 
 	debug_put((uint8_t *)c, 7*2);
@@ -61,7 +59,7 @@ int8_t ms5637_init(void)
 void ms5637_deinit()
 {
 	/* disable TWI */
-	TWI_Master_Deinitialise();
+	TWIM_Deinit();
 
 	/* disable power */
 	OUTPUT(MS5637_PWR_PIN);
@@ -71,81 +69,21 @@ void ms5637_deinit()
 
 uint32_t ms5637_get_reading_start_next(uint8_t next_cmd)
 {
-	unsigned char messageBuf[4];
+	unsigned char messageBuf[3];
+	uint32_t result;
 
 	/* read conversion */
-	messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TWI_WRITE<<TWI_READ_BIT);
-	messageBuf[1] = CMD_READ_ADC;
-	TWI_Start_Transceiver_With_Data(messageBuf, 2);
-
-	/* get value */
-	messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TWI_READ<<TWI_READ_BIT);
-	TWI_Start_Transceiver_With_Data(messageBuf, 4);
-
-	if(!TWI_Get_Data_From_Transceiver(messageBuf, 4))
-		return 0;
-
-	uint32_t result = (uint32_t)messageBuf[1] << 16;
-	result |= (uint32_t)messageBuf[2] << 8;
-	result |= messageBuf[3];
+	messageBuf[0] = CMD_READ_ADC;
+	if(TWIM_write(MS5637_ADDR, messageBuf, 1) == TRUE && TWIM_read(MS5637_ADDR, messageBuf, 3) == TRUE)
+		result = ((uint32_t)messageBuf[0] << 16) | ((uint32_t)messageBuf[1] << 8) | messageBuf[2];
+	else
+		//todo
+		result = 5;
 
 	/* start conversion */
-	messageBuf[0] = (MS5637_ADDR<<TWI_ADR_BITS) | (TWI_WRITE<<TWI_READ_BIT);
-	messageBuf[1] = next_cmd;
-	TWI_Start_Transceiver_With_Data(messageBuf, 2);
+	messageBuf[0] = next_cmd;
+	if(TWIM_write(MS5637_ADDR, messageBuf, 1) != TRUE)
+		return 3;
 
 	return result;
-}
-
-int32_t ms5637_get_pressure(void)
-{
-	int32_t d2 = ms5637_get_reading_start_next(CMD_START_D1);
-	if(d2 == 0)
-		return 0;
-
-	int32_t dt = d2 - ((uint32_t)c[5]<<8);
-	int32_t temp = 2000 + (int32_t)(((int64_t)dt * (uint64_t)c[6])>>23);
-
-	/* Second order temperature compensation */
-	//int64_t t2;
-	//if(temp >= 2000)
-	//{
-	//	/* High temperature */
-	//	t2 = 5 * (dt * dt) / (1LL<<38);
-	//}
-	//else
-	//{
-	//	/* Low temperature */
-	//	t2 = 3 * (dt * dt) / (1LL<<33);
-	//}
-	//temperature = (float)(temp - t2) / 100;
-
-	int32_t d1 = ms5637_get_reading_start_next(CMD_START_D2);
-	if(d1 == 0)
-		return 0;
-
-	int64_t off = ((uint64_t)c[2]<<17) + ((dt * ((uint64_t)c[4]))>>6);
-	int64_t sens = ((uint64_t)c[1]<<16) + ((dt * ((uint64_t)c[3]))>>7);
-
-	/* Second order temperature compensation for pressure */
-	if(temp < 2000)
-	{
-		/* Low temperature */
-		int32_t tx = temp-2000;
-		tx *= tx;
-		int32_t off2 = (61 * tx) >> 4;
-		int32_t sens2 = (29 * tx) >> 4;
-		if(temp < -1500)
-		{
-			/* Very low temperature */
-			tx = temp+1500;
-			tx *= tx;
-			off2 += 17 * tx;
-			sens2 += 9 * tx;
-		}
-		off -= off2;
-		sens -= sens2;
-	}
-
-	return ((((int64_t)d1 * sens)>>21) - off) >> 15;
 }

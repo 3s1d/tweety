@@ -35,26 +35,21 @@ int main(void)
 	p_init();
 	climb_init();
 
-
-
-
 	while(1)
 	{
 //		while(!btn_pressed());
 
-		const int32_t p_pa = ms5637_get_pressure();
-		const int32_t alt_cm = ms5637_p2alt(p_pa);		//10ms @ 1Mhz
-		const float climb_ms = climb_update(alt_cm);
+		const int32_t climb_cms = climb_get();
 
-//		debug_put((uint8_t *) &p_pa, sizeof(uint32_t));
+		debug_put((uint8_t *) &climb_cms, sizeof(uint32_t));
 
-		if(climb_ms > 0.0f)
-			_delay_us(99);
-		else
-			_delay_us(100);
-		_delay_ms(200);
+//		if(climb_ms > 0.0f)
+//			_delay_us(99);
+//		else
+//			_delay_us(100);
+//		_delay_ms(200);
 		p_off();
-		_delay_ms(200);
+//		_delay_ms(200);
 	}
 	return 1;
 }
