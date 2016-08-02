@@ -47,7 +47,6 @@ void debug_put(uint8_t *buf, uint8_t length)
 		CLR(DEBUG_SDA_PIN);
 		SET(DEBUG_SCL_PIN);
 		CLR(DEBUG_SCL_PIN);
-
 	}
 
 	/* stop condition */

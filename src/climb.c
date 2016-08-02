@@ -46,7 +46,19 @@ ISR(TIMER0_COMPA_vect)
 	//debug_put(&t, 1);
 
 	const int32_t p_pa = ms5637_get_pressure(d1, d2);
+
+#ifdef CLIMB_TEST
+	volatile int32_t alt_cm = ms5637_p2alt(p_pa);
+
+	/* emulate altitude */
+	static int32_t test_alt = C_START_ALT_CM;
+	alt_cm = test_alt;
+
+	/* add delta altitude */
+	test_alt += C_ADD;
+#else
 	const int32_t alt_cm = ms5637_p2alt(p_pa);		//10ms @ 1Mhz
+#endif
 
 	/* add new value to buffer */
 	climb_buffer[climb_buf_idx] = alt_cm;
@@ -56,7 +68,7 @@ ISR(TIMER0_COMPA_vect)
 	//debug_put((uint8_t *) &alt_cm, 4);
 }
 
-int32_t LR_den;
+//int32_t LR_den;
 void climb_init(void)
 {
 	while(ms5637_init() != 0)
@@ -78,14 +90,9 @@ void climb_init(void)
 	OCR0B = OCR0A>>1;
 	TIMSK0 = (1<<OCIE0B) | (1<<OCIE0A);
 
-
-	//todo
-	LR_den = 0;
-	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)						//todo limit 0 and int64_t??
-	{
-		LR_den += ((int64_t)i-LR_x_cross) * ((int64_t)i-LR_x_cross);
-	}
-//	LR_den *= 100.0f;				//unit of altitude is cm
+//	LR_den = 0;
+//	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)
+//		LR_den += ((int64_t)i-LR_x_cross) * ((int64_t)i-LR_x_cross);
 }
 
 /* we are using linear regression here */
@@ -95,10 +102,10 @@ int16_t climb_get(void)
 
 	/* compute average altitude */
 	int32_t avg_alt = 0;
-	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)		//todo optimize
+	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)
 	{
 		cli();
-		volatile int32_t buf = climb_buffer[i];
+		volatile int_fast32_t buf = climb_buffer[i];
 		sei();
 
 		avg_alt += buf;
@@ -109,14 +116,14 @@ int16_t climb_get(void)
 	/* compute LR numerator */
 	int32_t LR_num = 0;
 	uint8_t idx = climb_buf_idx;
-	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)		//todo optimize, todo limit 0??/
+	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)
 	{
 		/* first increasing, gives us a little time buffer */
 		if(++idx >= CLIMB_SAMPLES)
 			idx = 0;
 
 		cli();
-		volatile int32_t buf =	climb_buffer[idx];
+		volatile int_fast32_t buf = climb_buffer[idx];
 		sei();
 
 		LR_num += ((int32_t)i-LR_x_cross) * (buf - avg_alt);
