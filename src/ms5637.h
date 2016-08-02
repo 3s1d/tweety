@@ -20,7 +20,8 @@
 #define CMD_START_D2		0x5A	//osr = 8192
 #define CMD_READ_ADC		0x00
 
-#define OSR_8192_TIME		17
+/* note: we are using 20ms instead of 16.44ms to be a little more stable against 'hops' and to provide a stable clock */
+#define OSR_8192_TIME		20		//17
 
 //in centimeter
 #define ms5637_p2alt(p)		( (1.0f - pow((float)p/101325.0f, 0.190295f)) * 4433000.0f )

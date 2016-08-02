@@ -6,6 +6,7 @@
  */
 
 #include <avr/io.h>
+#include <util/delay.h>
 
 #include "flexport.h"
 #include "piezo.h"
@@ -42,4 +43,30 @@ void p_off(void)
 	TCCR1B = 0;
 
 	//todo clr pin?
+}
+
+
+/*
+ * note: processor under heavy load -> _delay_ms() takes a lot more time!
+ */
+void p_hello(void)
+{
+	p_set(1000);
+	_delay_ms(100);
+	p_off();
+	_delay_ms(20);
+	p_set(2000);
+	_delay_ms(100);
+	p_off();
+}
+
+void p_bye(void)
+{
+	p_set(1000);
+	_delay_ms(100);
+	p_off();
+	_delay_ms(20);
+	p_set(500);
+	_delay_ms(100);
+	p_off();
 }

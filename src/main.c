@@ -32,16 +32,25 @@ int main(void)
 	p_init();
 	climb_init();
 
+	uint8_t pressed = 0;
+
 	while(1)
 	{
-//		while(!btn_pressed());
-
 		const int16_t climb_cms = climb_get();
 
 		debug_put((uint8_t *) &climb_cms, sizeof(uint16_t));
 
+		/* handle button */
 		if(btn_pressed())
+			pressed++;
+		else
+			pressed = 0;
+		/* note: value heavily depends on F_CPU */
+		if(pressed > 6)
+		{
 			sleep();
+			pressed = 0;
+		}
 
 //		if(climb_ms > 0.0f)
 //			_delay_us(99);

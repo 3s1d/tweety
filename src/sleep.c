@@ -24,6 +24,8 @@ ISR(INT0_vect)
 
 void sleep(void)
 {
+	p_bye();
+
 	/* wait for button released */
 	while(btn_pressed());
 
@@ -40,9 +42,14 @@ void sleep(void)
 	debug_put(&d, 1);
 
 	/* sleep */
-	//todo at least 2sec btn...
-	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-	sleep_mode();
+	uint8_t stay_off = 100;
+	while(stay_off)
+	{
+		set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+		sleep_mode();
+
+		//todo
+	}
 
 	/* debug */
 	d = 11;
@@ -54,4 +61,5 @@ void sleep(void)
 	/* start up system again */
 	climb_init();
 
+	p_hello();
 }

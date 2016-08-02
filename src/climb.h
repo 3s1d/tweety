@@ -20,7 +20,7 @@
 					//sum((i-LR_x_cross)^2) from 0 to CLIMB_SAMPLES-1
 
 
-#define CLIMB_TEST
+//#define CLIMB_TEST
 
 #ifdef CLIMB_TEST
 

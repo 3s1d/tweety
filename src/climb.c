@@ -26,8 +26,6 @@ ISR(TIMER0_COMPB_vect)
 
 	/*get d2, trigger d2 */
 	d2 = ms5637_get_reading_start_next(CMD_START_D1);
-	/* reset timer */
-	TCNT0 = OCR0B;
 
 //	uint8_t t=1;
 //	debug_put(&t, 1);
@@ -39,8 +37,6 @@ ISR(TIMER0_COMPA_vect)
 
 	/* get d1, trigger d2 */
 	d1 = ms5637_get_reading_start_next(CMD_START_D2);
-	/* reset timer */
-	TCNT0 = 0;
 
 	//uint8_t t=0;
 	//debug_put(&t, 1);

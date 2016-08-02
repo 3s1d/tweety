@@ -22,4 +22,8 @@ void p_init(void);
 void p_set(uint16_t freq);
 void p_off(void);
 
+/* turn on/off signals */
+void p_hello(void);
+void p_bye(void);
+
 #endif /* PIEZO_H_ */
