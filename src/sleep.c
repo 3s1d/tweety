@@ -8,6 +8,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/sleep.h>
+#include <util/delay.h>
 
 #include "flexport.h"
 #include "button.h"
@@ -17,7 +18,7 @@
 
 #include "debug.h"
 
-ISR(INT0_vect)
+ISR(PCINT2_vect)
 {
 
 }
@@ -33,30 +34,49 @@ void sleep(void)
 	p_off();
 	climb_deinit();
 
-	/* configure button to trigger an ext interrupt (int0 @ low level)*/
-	//EICRA = (0<<ISC00);
-	EIMSK = 1<<INT0;
+	/* configure button to trigger an PC interrupt (PCINT18 @ D,2) */
+	PCMSK2 = _BV(PCINT18);
+	PCICR = _BV(PCIE2);
 
 	/* debug */
 	uint8_t d = 10;
 	debug_put(&d, 1);
 
-	/* sleep */
-	uint8_t stay_off = 100;
-	while(stay_off)
+	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+	uint8_t sleep = 1;
+	while(sleep)
 	{
-		set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+		/* sleep */
 		sleep_mode();
 
-		//todo
+		/* minimal button press time */
+		_delay_ms(500);
+
+		d = 13;
+		debug_put(&d, 1);
+
+		/* way too short */
+		if(!btn_pressed())
+			continue;
+
+		for(uint8_t i=0; i < 50; i++)
+		{
+			/* button released in time -> power on */
+			if(!btn_pressed())
+			{
+				sleep = 0;
+				break;
+			}
+			_delay_ms(100);
+		}
 	}
 
 	/* debug */
 	d = 11;
 	debug_put(&d, 1);
 
-	/* disable int0 */
-	EIMSK = 0;
+	/* disable PC int */
+	PCICR = 0;
 
 	/* start up system again */
 	climb_init();

@@ -45,20 +45,17 @@ int main(void)
 			pressed++;
 		else
 			pressed = 0;
+
 		/* note: value heavily depends on F_CPU */
-		if(pressed > 6)
+		if(pressed > 3)
 		{
 			sleep();
 			pressed = 0;
 		}
 
-//		if(climb_ms > 0.0f)
-//			_delay_us(99);
-//		else
-//			_delay_us(100);
-//		_delay_ms(200);
+
+		/* todo beep */
 		p_off();
-//		_delay_ms(200);
 	}
 	return 1;
 }
