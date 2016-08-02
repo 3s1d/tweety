@@ -70,3 +70,14 @@ void p_bye(void)
 	_delay_ms(100);
 	p_off();
 }
+
+void p_beep(uint8_t n)
+{
+	for(uint8_t i=0; i<n; i++)
+	{
+		p_set(1000);
+		_delay_ms(100);
+		p_off();
+		_delay_ms(50);
+	}
+}

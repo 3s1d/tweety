@@ -105,7 +105,7 @@ void climb_deinit(void)
 /* we are using linear regression here */
 int16_t climb_get(void)
 {
-	static int32_t climb;
+	static int32_t climb = 0;
 
 	/* compute average altitude */
 	int32_t avg_alt = 0;

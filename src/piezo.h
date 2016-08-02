@@ -26,4 +26,6 @@ void p_off(void);
 void p_hello(void);
 void p_bye(void);
 
+void p_beep(uint8_t n);
+
 #endif /* PIEZO_H_ */
