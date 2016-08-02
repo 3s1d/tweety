@@ -8,29 +8,26 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include <stdlib.h>
-#include <math.h>
 
 #include "flexport.h"
-#include "ms5637.h"
-#include "piezo.h"
 #include "button.h"
 #include "climb.h"
+#include "piezo.h"
+#include "sleep.h"
 
 #include "debug.h"
 
 
 int main(void)
 {
-	/* clock system */
-	//TWHSR = 1
-	//twi high speed requires i/o clock of 4mhz in case of 8mhz internal clock
+	//todo sleep: enable pull ups oder set i/o as output
 
 	sei();
 
 	uint8_t t=0;
 	debug_put(&t, 1);
 
+	/* boot */
 	btn_init();
 	p_init();
 	climb_init();
@@ -42,6 +39,9 @@ int main(void)
 		const int16_t climb_cms = climb_get();
 
 		debug_put((uint8_t *) &climb_cms, sizeof(uint16_t));
+
+		if(btn_pressed())
+			sleep();
 
 //		if(climb_ms > 0.0f)
 //			_delay_us(99);

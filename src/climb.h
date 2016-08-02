@@ -24,7 +24,7 @@
 
 #ifdef CLIMB_TEST
 
-/*adjust test values here*/
+/* adjust test values here */
 #define C_START_ALT_CM			200000
 #define	C_CLIMB_CMS			200			//resolution is CLIMB_SAMPLES_PER_SEC
 /******/
@@ -35,6 +35,7 @@
 
 
 void climb_init(void);
+void climb_deinit(void);
 
 int16_t climb_get(void);
 

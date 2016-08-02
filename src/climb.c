@@ -77,6 +77,8 @@ void climb_init(void)
 		_delay_ms(100);
 	}
 
+	//todo prefill climb_buffer with current values to prevent beeping at startup
+
 	/* configure timer0 to generate an interrupt every OSR_8192_TIME */
 #if F_CPU >= 2000000UL
 	/* CTC and div 1024 */
@@ -93,6 +95,15 @@ void climb_init(void)
 //	LR_den = 0;
 //	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)
 //		LR_den += ((int64_t)i-LR_x_cross) * ((int64_t)i-LR_x_cross);
+}
+
+void climb_deinit(void)
+{
+	/* stop timer0 */
+	TCCR0A = 0;
+
+	/* stop ms5637 */
+	ms5637_deinit();
 }
 
 /* we are using linear regression here */
