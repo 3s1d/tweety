@@ -25,6 +25,8 @@ int main(void)
 	//todo: auto off
 	//todo: config or go to sleepmode
 
+
+
 	sei();
 
 	/* enable pull-ups for all unused ports (reduces standby power) */
