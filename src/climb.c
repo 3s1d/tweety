@@ -17,9 +17,9 @@
 
 int32_t climb_buffer[CLIMB_SAMPLES];
 uint8_t climb_buf_idx = 0;
-
 int32_t d1,d2;
 
+/* climb rate in cm/s */
 int16_t climb_cms = 0;
 
 /* first */

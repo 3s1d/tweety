@@ -25,8 +25,6 @@ int main(void)
 	//todo: auto off
 	//todo: config or go to sleepmode
 
-
-
 	sei();
 
 	/* enable pull-ups for all unused ports (reduces standby power) */
@@ -44,12 +42,11 @@ int main(void)
 	p_init();
 	climb_init();
 
-	/* further reduce power */
+	/* further reduce power consumption */
 	power_spi_disable();
 	power_adc_disable();
 
 	uint8_t pressed = 0;
-
 	while(1)
 	{
 		/* update climb rate */
