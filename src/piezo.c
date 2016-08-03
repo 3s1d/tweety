@@ -10,6 +10,8 @@
 #include <util/delay.h>
 
 #include "flexport.h"
+#include "climb.h"
+#include "button.h"
 #include "piezo.h"
 
 uint8_t p_dosink;
@@ -24,7 +26,48 @@ void p_init(void)
 	OCR1A = PIEZO_VOL;
 
 	/* load config */
-	p_dosink = eeprom_read_byte((uint8_t *) 0);
+	p_dosink = eeprom_read_byte((uint8_t *) PIEZO_SINK_EEPROM);
+}
+
+void p_config(void)
+{
+	/* wait for user releasing the button */
+	p_set(500);
+	while(btn_pressed());
+	p_off();
+
+	uint8_t pressed = 0;
+	while(1)
+	{
+		/* we need to execute btn_pressed() as often as possible */
+		/* 2 beeps for sinking */
+		for(uint8_t i=0; i<(p_dosink?5:4); i++)
+		{
+			if(i>=3)
+				p_beep(1);
+			else
+				_delay_ms(100);
+
+			if(btn_pressed())
+			{
+				/* longpress -> exit */
+				if(++pressed >= 10)
+				{
+					/* store config */
+					eeprom_write_byte((uint8_t *) PIEZO_SINK_EEPROM, p_dosink);
+
+					return;
+				}
+			}
+			else if(pressed && !btn_pressed())
+			{
+				/* toggle sink */
+				p_dosink = !p_dosink;
+
+				pressed = 0;
+			}
+		}
+	}
 }
 
 void p_set(uint16_t freq)
@@ -50,7 +93,6 @@ void p_off(void)
 
 	//todo clr pin?
 }
-
 
 /*
  * note: processor under heavy load -> _delay_ms() takes a lot more time!
@@ -86,4 +128,17 @@ void p_beep(uint8_t n)
 		p_off();
 		_delay_ms(50);
 	}
+}
+
+void p_climb(void)
+{
+	/* todo */
+
+	if(climb_cms > 10)
+		p_set(2000);
+	else if(p_dosink && climb_cms < -10)
+		p_set(500);
+	else
+		p_off();
+
 }

@@ -7,7 +7,6 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/eeprom.h>
 #include <avr/power.h>
 #include <util/delay.h>
 
@@ -20,47 +19,6 @@
 
 #include "debug.h"
 
-
-void config(void)
-{
-	/* wait for user releasing the button */
-	p_set(500);
-	while(btn_pressed());
-	p_off();
-
-	uint8_t pressed = 0;
-	while(1)
-	{
-		/* we need to execute btn_pressed() as often as possible */
-		/* 2 beeps for sinking */
-		for(uint8_t i=0; i<(p_dosink?5:4); i++)
-		{
-			if(i>=3)
-				p_beep(1);
-			else
-				_delay_ms(100);
-
-			if(btn_pressed())
-			{
-				/* longpress -> exit */
-				if(++pressed >= 10)
-				{
-					/* store config */
-					eeprom_write_byte((uint8_t *) 0, p_dosink);
-
-					return;
-				}
-			}
-			else if(pressed && !btn_pressed())
-			{
-				/* toggle sink */
-				p_dosink = !p_dosink;
-
-				pressed = 0;
-			}
-		}
-	}
-}
 
 int main(void)
 {
@@ -90,10 +48,9 @@ int main(void)
 
 	/* enter config */
 	if(btn_pressed())
-		config();
+		p_config();
 
 	debug_put(&p_dosink, 1);
-
 
 	/* instantaneously go into sleep mode */
 	uint8_t pressed = UINT8_MAX-1;

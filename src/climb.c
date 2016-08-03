@@ -10,8 +10,9 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
-#include "ms5637.h"
 #include "climb.h"
+#include "ms5637.h"
+#include "piezo.h"
 
 #include "debug.h"
 
@@ -28,6 +29,9 @@ ISR(TIMER0_COMPB_vect)
 
 	/*get d2, trigger d2 */
 	d2 = ms5637_get_reading_start_next(CMD_START_D1);
+
+	/* call piezo */
+	p_climb();
 
 //	uint8_t t=1;
 //	debug_put(&t, 1);
