@@ -41,12 +41,12 @@ void p_config(void)
 	{
 		/* we need to execute btn_pressed() as often as possible */
 		/* 2 beeps for sinking */
-		for(uint8_t i=0; i<(p_dosink?5:4); i++)
+		for(uint8_t i=0; i<5; i++)
 		{
-			if(i>=3)
+			if((i>=3 && p_dosink) || i>=4)
 				p_beep(1);
 			else
-				_delay_ms(100);
+				_delay_ms(300);
 
 			if(btn_pressed())
 			{
@@ -94,28 +94,25 @@ void p_off(void)
 	//todo clr pin?
 }
 
-/*
- * note: processor under heavy load -> _delay_ms() takes a lot more time!
- */
 void p_hello(void)
 {
 	p_set(1000);
-	_delay_ms(100);
+	_delay_ms(250);
 	p_off();
-	_delay_ms(20);
+	_delay_ms(75);
 	p_set(2000);
-	_delay_ms(100);
+	_delay_ms(250);
 	p_off();
 }
 
 void p_bye(void)
 {
 	p_set(1000);
-	_delay_ms(100);
+	_delay_ms(250);
 	p_off();
-	_delay_ms(20);
+	_delay_ms(75);
 	p_set(500);
-	_delay_ms(100);
+	_delay_ms(250);
 	p_off();
 }
 
@@ -124,21 +121,27 @@ void p_beep(uint8_t n)
 	for(uint8_t i=0; i<n; i++)
 	{
 		p_set(1000);
-		_delay_ms(100);
+		_delay_ms(250);
 		p_off();
-		_delay_ms(50);
+		_delay_ms(75);
 	}
 }
 
+/* called every 40ms */
 void p_climb(void)
 {
 	/* todo */
+	static uint8_t state = 0;
 
 	if(climb_cms > 10)
 		p_set(2000);
-	else if(p_dosink && climb_cms < -10)
+	else if(p_dosink && climb_cms < -250)
 		p_set(500);
+//	else if(state & 1)
+//		p_set(1000);
 	else
 		p_off();
 
+
+	state++;
 }

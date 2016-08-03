@@ -17,11 +17,11 @@
 #include "debug.h"
 
 int32_t climb_buffer[CLIMB_SAMPLES];
-uint8_t climb_buf_idx = 0;
-int32_t d1,d2;
+volatile uint8_t climb_buf_idx;
+volatile int32_t d1,d2;
 
 /* climb rate in cm/s */
-int16_t climb_cms = 0;
+int16_t climb_cms;
 
 /* first */
 ISR(TIMER0_COMPB_vect)
@@ -79,9 +79,12 @@ void climb_init(void)
 		_delay_ms(100);
 	}
 
-	//todo prefill climb_buffer with current values to prevent beeping at startup
+	/* set index to a known position */
+	climb_buf_idx = 0;
+	climb_cms = 0;
 
 	/* configure timer0 to generate an interrupt every OSR_8192_TIME */
+	TCNT0 = 0;
 #if F_CPU >= 2000000UL
 	/* CTC and div 1024 */
 	TCCR0A = (1<<CTC0) | (5<<CS00);
@@ -97,12 +100,25 @@ void climb_init(void)
 //	LR_den = 0;
 //	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)
 //		LR_den += ((int64_t)i-LR_x_cross) * ((int64_t)i-LR_x_cross);
+
+	/* pre-fill ring buffer */
+	/* wait a few  altitude measurements and replicate them */
+	//note: the first measurement will fail
+	//note2: a proper solution requires to many flash due to the inlineing of ms5637_p2alt()
+	while(climb_buf_idx < 5);
+	cli();
+	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)
+		climb_buffer[i] = climb_buffer[4];
+	sei();
 }
 
 void climb_deinit(void)
 {
 	/* stop timer0 */
 	TCCR0A = 0;
+
+	/* ensure piezo is quiet */
+	p_off();
 
 	/* stop ms5637 */
 	ms5637_deinit();

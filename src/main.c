@@ -11,7 +11,6 @@
 #include <util/delay.h>
 
 #include "flexport.h"
-#include "battery.h"
 #include "button.h"
 #include "climb.h"
 #include "piezo.h"
@@ -41,14 +40,12 @@ int main(void)
 	/* boot */
 	btn_init();
 	p_init();
+	if(btn_pressed())
+		p_config();
 	climb_init();
 
 	uint8_t t=0;
 	debug_put(&t, 1);
-
-	/* enter config */
-	if(btn_pressed())
-		p_config();
 
 	debug_put(&p_dosink, 1);
 
@@ -61,23 +58,19 @@ int main(void)
 
 		debug_put((uint8_t *) &climb_cms, sizeof(uint16_t));
 
+		/* note: value heavily depends on F_CPU */
+		if(pressed > 3)
+		{
+			sleep();
+			pressed = 0;
+		}
+
 		/* handle button */
 		if(btn_pressed())
 			pressed++;
 		else
 			pressed = 0;
 
-		/* note: value heavily depends on F_CPU */
-		if(pressed > 3)
-		{
-			sleep();
-			pressed = 0;
-
-			/* indicate battery state */
-			//note: the previous 'power on'-beep is important as it stresses the battery a little
-			_delay_ms(200);		//it's a little longer, the cpu has some heavy interrupt stuff going on
-			p_beep(battery());
-		}
 	}
 	return 1;
 }

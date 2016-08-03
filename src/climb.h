@@ -10,7 +10,7 @@
 
 
 #define CLIMB_SAMPLES_PER_SEC		25						//approx value must be measured upon F_CPU changes
-#define CLIMB_AVG_SEC			3
+#define CLIMB_AVG_SEC			2
 #define CLIMB_SAMPLES			(CLIMB_SAMPLES_PER_SEC * CLIMB_AVG_SEC)
 
 #define LR_x_cross 			(CLIMB_SAMPLES>>1)

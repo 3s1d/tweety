@@ -11,6 +11,7 @@
 #include <util/delay.h>
 
 #include "flexport.h"
+#include "battery.h"
 #include "button.h"
 #include "climb.h"
 #include "piezo.h"
@@ -25,14 +26,13 @@ ISR(PCINT2_vect)
 
 void sleep(void)
 {
+	/* prepare system */
+	climb_deinit();
+
 	p_bye();
 
 	/* wait for button released */
 	while(btn_pressed());
-
-	/* prepare system */
-	p_off();
-	climb_deinit();
 
 	/* configure button to trigger an PC interrupt (PCINT18 @ D,2) */
 	PCMSK2 = _BV(PCINT18);
@@ -60,8 +60,9 @@ void sleep(void)
 			continue;
 
 		/* quickly indicate we are up and running */
+		//note: longer beeps confuses me...
 		p_set(1000);
-		_delay_ms(200);
+		_delay_ms(30);
 		p_off();
 
 		for(uint8_t i=0; i < 50; i++)
@@ -83,8 +84,16 @@ void sleep(void)
 	/* disable PC int */
 	PCICR = 0;
 
+	/* indicate wakeup */
+	p_hello();
+
+	/* distinguish hello from battery */
+	_delay_ms(500);
+
+	/* indicate battery state */
+	//note: the previous 'power on'-beep is important as it stresses the battery a little
+	p_beep(battery());
+
 	/* start up system again */
 	climb_init();
-
-	p_hello();
 }
