@@ -90,8 +90,6 @@ void p_off(void)
 
 	/* disable hardware */
 	TCCR1B = 0;
-
-	//todo clr pin?
 }
 
 void p_hello(void)

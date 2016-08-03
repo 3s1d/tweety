@@ -22,7 +22,6 @@
 int main(void)
 {
 	//todo: auto off
-	//todo: config or go to sleepmode
 
 	sei();
 
