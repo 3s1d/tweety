@@ -7,6 +7,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/eeprom.h>
 #include <avr/power.h>
 #include <util/delay.h>
 
@@ -19,6 +20,47 @@
 
 #include "debug.h"
 
+
+void config(void)
+{
+	/* wait for user releasing the button */
+	p_set(500);
+	while(btn_pressed());
+	p_off();
+
+	uint8_t pressed = 0;
+	while(1)
+	{
+		/* we need to execute btn_pressed() as often as possible */
+		/* 2 beeps for sinking */
+		for(uint8_t i=0; i<(p_dosink?5:4); i++)
+		{
+			if(i>=3)
+				p_beep(1);
+			else
+				_delay_ms(100);
+
+			if(btn_pressed())
+			{
+				/* longpress -> exit */
+				if(++pressed >= 10)
+				{
+					/* store config */
+					eeprom_write_byte((uint8_t *) 0, p_dosink);
+
+					return;
+				}
+			}
+			else if(pressed && !btn_pressed())
+			{
+				/* toggle sink */
+				p_dosink = !p_dosink;
+
+				pressed = 0;
+			}
+		}
+	}
+}
 
 int main(void)
 {
@@ -34,19 +76,27 @@ int main(void)
 	PORTC = 0xCE;	//all except C,0 (ms5637 supply), C,4+5 (TWI)
 	PORTD = 0xFF;	//all D,2 requires a pull-up anyway
 
-	uint8_t t=0;
-	debug_put(&t, 1);
+	/* further reduce power consumption */
+	power_spi_disable();
+	power_adc_disable();
 
 	/* boot */
 	btn_init();
 	p_init();
 	climb_init();
 
-	/* further reduce power consumption */
-	power_spi_disable();
-	power_adc_disable();
+	uint8_t t=0;
+	debug_put(&t, 1);
 
-	uint8_t pressed = 0;
+	/* enter config */
+	if(btn_pressed())
+		config();
+
+	debug_put(&p_dosink, 1);
+
+
+	/* instantaneously go into sleep mode */
+	uint8_t pressed = UINT8_MAX-1;
 	while(1)
 	{
 		/* update climb rate */

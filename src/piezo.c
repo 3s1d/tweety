@@ -6,10 +6,13 @@
  */
 
 #include <avr/io.h>
+#include <avr/eeprom.h>
 #include <util/delay.h>
 
 #include "flexport.h"
 #include "piezo.h"
+
+uint8_t p_dosink;
 
 void p_init(void)
 {
@@ -18,7 +21,10 @@ void p_init(void)
 	CLR(PIEZO_PIN);
 
 	/* set volume */
-	OCR1A = 150;
+	OCR1A = PIEZO_VOL;
+
+	/* load config */
+	p_dosink = eeprom_read_byte((uint8_t *) 0);
 }
 
 void p_set(uint16_t freq)

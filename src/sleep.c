@@ -59,6 +59,11 @@ void sleep(void)
 		if(!btn_pressed())
 			continue;
 
+		/* quickly indicate we are up and running */
+		p_set(1000);
+		_delay_ms(200);
+		p_off();
+
 		for(uint8_t i=0; i < 50; i++)
 		{
 			/* button released in time -> power on */
