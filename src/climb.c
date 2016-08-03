@@ -20,6 +20,8 @@ uint8_t climb_buf_idx = 0;
 
 int32_t d1,d2;
 
+int16_t climb_cms = 0;
+
 /* first */
 ISR(TIMER0_COMPB_vect)
 {
@@ -103,10 +105,8 @@ void climb_deinit(void)
 }
 
 /* we are using linear regression here */
-int16_t climb_get(void)
+void climb_update(void)
 {
-	static int32_t climb = 0;
-
 	/* compute average altitude */
 	int32_t avg_alt = 0;
 	for(uint8_t i=0; i<CLIMB_SAMPLES; i++)
@@ -136,9 +136,11 @@ int16_t climb_get(void)
 		LR_num += ((int32_t)i-LR_x_cross) * (buf - avg_alt);
 	}
 
-	/* average climb and migrate */
-	climb += (LR_num*CLIMB_SAMPLES_PER_SEC) / LR_den;
-	climb /= 2;
+	/* final climb value */
+	volatile const int_fast16_t climb = (LR_num*CLIMB_SAMPLES_PER_SEC) / LR_den;
 
-	return (int16_t) climb;
+	/* make publicly available */
+	cli();
+	climb_cms = climb;
+	sei();
 }

@@ -33,10 +33,11 @@
 
 #endif
 
+extern int16_t climb_cms;
 
 void climb_init(void);
 void climb_deinit(void);
 
-int16_t climb_get(void);
+void climb_update(void);
 
 #endif /* CLIMB_H_ */

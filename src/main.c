@@ -52,11 +52,8 @@ int main(void)
 
 	while(1)
 	{
-		//todo make global variable
-		const int16_t climb_cms = climb_get();
-
-		/* todo beep */
-		p_off();
+		/* update climb rate */
+		climb_update();
 
 		debug_put((uint8_t *) &climb_cms, sizeof(uint16_t));
 
