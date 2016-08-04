@@ -27,7 +27,7 @@ int16_t climb_cms;
 ISR(TIMER0_COMPB_vect)
 {
 
-	/*get d2, trigger d2 */
+	/*get d2, trigger d1 */
 	d2 = ms5637_get_reading_start_next(CMD_START_D1);
 
 	/* call piezo */
@@ -157,7 +157,11 @@ void climb_update(void)
 	}
 
 	/* final climb value */
-	volatile const int_fast16_t climb = (LR_num*CLIMB_SAMPLES_PER_SEC) / LR_den;
+	volatile int_fast16_t climb = (LR_num*CLIMB_SAMPLES_PER_SEC) / LR_den;
+	if(climb > 1000)
+		climb = 1000;
+	if(climb < -1000)
+		climb = -1000;
 
 	/* make publicly available */
 	cli();
