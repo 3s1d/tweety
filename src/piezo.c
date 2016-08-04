@@ -138,15 +138,16 @@ void p_beep(uint8_t n)
 // - 25 points total
 // - this is default configuration, audio profiler is looking for these values. They are replaced then in hex file
 // - you can use http://audio.skybean.eu/ to create this using Make Code button
-static uint16_t vario_freq[] = {127, 130, 133, 136, 146, 159, 175, 198, 234, 283, 344, 415, 564, 701, 788, 846, 894, 927, 955, 985, 1008, 1037, 1070, 1106, 1141, };
-static uint16_t vario_paus[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 540, 438, 368, 312, 259, 219, 176, 138, 110, 81, 60, 46, 36, };
-static uint16_t vario_leng[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 320, 242, 189, 155, 134, 115, 95, 75, 55, 37, 30, 28, 28, };
+static uint16_t vario_freq[] = {127, 130, 133, 136, 146, 159, 175, 198, 234, 283, 344, 415, 564, 701, 788, 846, 894, 927, 955, 985, 1008, 1037, 1070, 1200, 1400, };
+static uint16_t vario_paus[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 650, 550, 490, 450, 370, 290, 230, 190, 160, 135, 120, 110, 100, };
+static uint16_t vario_leng[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 300, 200, 140, 120, 110, 100, 90, 70, 60, 55, 50, 45, 40, };
 
 //linear aproximation between two points
 uint16_t get_near(int16_t vario, uint16_t * src)
 {
-	uint8_t findex = vario / 100 + 12;
-	float m = (vario - vario / 100) / 100.0f;
+	float fvario = vario / 100.0f;
+	int8_t findex = fvario + 12;
+	float m = fvario - floor(fvario);
 
 	uint8_t index = findex;
 	if (findex > 23)
