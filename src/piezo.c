@@ -161,8 +161,6 @@ uint16_t get_near(int16_t vario, uint16_t * src)
 		m = 0.0;
 	}
 
-	m = round(m * 10) / 10.0;
-
 	int16_t start = src[index];
 
 	start = start + (float)((int16_t)src[index + 1] - start) * m;
