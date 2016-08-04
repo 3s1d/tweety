@@ -143,10 +143,10 @@ static uint16_t vario_leng[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 540, 438, 36
 static uint16_t vario_paus[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 320, 242, 189, 155, 134, 115, 95, 75, 55, 37, 30, 28, 28, };
 
 //linear aproximation between two points
-uint16_t get_near(float vario, uint16_t * src)
+uint16_t get_near(int16_t vario, uint16_t * src)
 {
-	float findex = floor(vario) +  12;
-	float m = vario - floor(vario);
+	uint8_t findex = vario / 100 + 12;
+	float m = (vario - vario / 100) / 100.0f;
 
 	uint8_t index = findex;
 	if (findex > 23)
@@ -177,8 +177,8 @@ uint8_t piepsen_on_off(void)
     static uint64_t ms_last_off, ms_last_on;
     static uint8_t sinking = 0, climbing = 0, beepswitch = 0;
 
-    duration = get_near((float)climb_cms/100.0f, vario_leng);
-    pause = get_near((float)climb_cms/100.0f, vario_paus);
+    duration = get_near(climb_cms, vario_leng);
+    pause = get_near(climb_cms, vario_paus);
 
     // Sinkton einschalten wenn er nicht an ist
     if ((climb_cms < SINKTRESHOLD) && (sinking == OFF))
@@ -256,7 +256,7 @@ void p_climb(void)
 
 	if (p_on_off == ON)
 	{
-		p_set(get_near((float)climb_cms/100.0f, vario_freq));
+		p_set(get_near(climb_cms, vario_freq));
 	}
 	else if (p_on_off == OFF)
 	{
