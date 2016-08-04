@@ -15,6 +15,7 @@
 #include "piezo.h"
 
 uint8_t p_dosink;
+uint64_t milli_seconds = 0;
 
 void p_init(void)
 {
@@ -94,23 +95,31 @@ void p_off(void)
 
 void p_hello(void)
 {
-	p_set(1000);
+	p_set(800);
 	_delay_ms(250);
 	p_off();
 	_delay_ms(75);
-	p_set(2000);
-	_delay_ms(250);
+	p_set(1000);
+	_delay_ms(100);
+	p_off();
+	_delay_ms(75);
+	p_set(1200);
+	_delay_ms(100);
 	p_off();
 }
 
 void p_bye(void)
 {
-	p_set(1000);
-	_delay_ms(250);
+	p_set(800);
+	_delay_ms(200);
 	p_off();
 	_delay_ms(75);
-	p_set(500);
-	_delay_ms(250);
+	p_set(600);
+	_delay_ms(150);
+	p_off();
+	_delay_ms(75);
+	p_set(400);
+	_delay_ms(100);
 	p_off();
 }
 
@@ -125,21 +134,123 @@ void p_beep(uint8_t n)
 	}
 }
 
+int16_t mapDuration[][2] = { { 400, 100 }, { 200, 200 }, { 0, 300 }, { -500, 600 } };
+
+uint16_t map_eval_duration(int16_t climb)
+{
+	uint8_t i, part;
+	uint16_t duration;
+
+	if (climb > 200) //climbing > 2m/s
+	{
+		duration = ((int32_t) 80000) / climb;
+	}
+	else
+	{
+		for (i = 0; mapDuration[i][0] > climb; i++)
+			;
+		part = ((climb - mapDuration[i][0])) / (mapDuration[i - 1][0] - mapDuration[i][0]);
+		duration = (mapDuration[i][1] + (part * (mapDuration[i - 1][1] - mapDuration[i][1])));
+	}
+	if(((int16_t)duration - TONPAUSE) > (int16_t)duration / 2)
+		return ((int16_t)duration - TONPAUSE);
+	else
+		return duration / 2;
+}
+
+uint8_t piepsen_on_off(void)
+{
+	uint8_t ret = 2;
+	uint16_t pause, duration;
+    static uint64_t ms_last_off, ms_last_on;
+    static uint8_t sinking = 0, climbing = 0, beepswitch = 0;
+
+    duration = map_eval_duration(climb_cms);
+
+    //if (duration <= TONPAUSE)
+    {
+        pause = duration*1.5;
+    }
+    // Sinkton einschalten wenn er nicht an ist
+    if ((climb_cms < SINKTRESHOLD) && (sinking == OFF))
+    {
+    		sinking = ON;
+    }
+    // Sinkton ausschalten wenn er an ist
+    if ((climb_cms >= SINKTRESHOLD) && (sinking == ON))
+    {
+    		sinking = OFF;
+    }
+    // Steigton einschalten wenn er nicht an ist
+    if ((climb_cms > CLIMBTRESHOLD) && (climbing == OFF))
+    {
+    		climbing = ON;
+    }
+    // Steigton ausschalten wenn er an ist
+    if ((climb_cms <= CLIMBTRESHOLD) && climbing == ON)
+    {
+    		climbing = OFF;
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////
+
+    if (sinking == ON && (milli_seconds > (ms_last_off + MINTONELENGTH)))
+    {
+        ret = 1;
+        ms_last_on = milli_seconds;
+        beepswitch = ON;
+    }
+    else
+    {
+        if (climbing == ON)
+        {
+            if (beepswitch == ON)
+            {
+                if (milli_seconds > (ms_last_on + duration))
+                {
+                    ret = 0;
+                    ms_last_off = milli_seconds;
+                    beepswitch = OFF;
+                }
+            }
+            else
+            {
+                if (milli_seconds > (ms_last_off + pause))
+                {
+                    ret = 1;
+                    ms_last_on = milli_seconds;
+                    beepswitch = ON;
+                }
+            }
+        }
+        else
+        {
+            if (!((sinking == ON) || (climbing == ON)) && (beepswitch == ON) && milli_seconds > (ms_last_on + MINTONELENGTH))
+            {
+                ret = 0;
+                ms_last_off = milli_seconds;
+                beepswitch = OFF;
+            }
+        }
+    }
+    return (ret);
+}
+
 /* called every 40ms */
 void p_climb(void)
 {
-	/* todo */
-	static uint8_t state = 0;
+	uint8_t p_on_off;
 
-	if(climb_cms > 10)
-		p_set(2000);
-	else if(p_dosink && climb_cms < -250)
-		p_set(500);
-//	else if(state & 1)
-//		p_set(1000);
-	else
+	milli_seconds += 40;
+
+	p_on_off = piepsen_on_off();
+
+	if (p_on_off == ON)
+	{
+		p_set(STARTFREQUENCY + climb_cms / 1.5);
+	}
+	else if (p_on_off == OFF)
+	{
 		p_off();
-
-
-	state++;
+	}
 }
