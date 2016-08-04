@@ -134,28 +134,40 @@ void p_beep(uint8_t n)
 	}
 }
 
-int16_t mapDuration[][2] = { { 400, 100 }, { 200, 200 }, { 0, 300 }, { -500, 600 } };
+//Sound profile
+// - 25 points total
+// - this is default configuration, audio profiler is looking for these values. They are replaced then in hex file
+// - you can use http://audio.skybean.eu/ to create this using Make Code button
+static uint16_t vario_freq[] = {127, 130, 133, 136, 146, 159, 175, 198, 234, 283, 344, 415, 564, 701, 788, 846, 894, 927, 955, 985, 1008, 1037, 1070, 1106, 1141, };
+static uint16_t vario_leng[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 540, 438, 368, 312, 259, 219, 176, 138, 110, 81, 60, 46, 36, };
+static uint16_t vario_paus[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 320, 242, 189, 155, 134, 115, 95, 75, 55, 37, 30, 28, 28, };
 
-uint16_t map_eval_duration(int16_t climb)
+//linear aproximation between two points
+uint16_t get_near(float vario, uint16_t * src)
 {
-	uint8_t i, part;
-	uint16_t duration;
+	float findex = floor(vario) +  12;
+	float m = vario - floor(vario);
 
-	if (climb > 200) //climbing > 2m/s
+	uint8_t index = findex;
+	if (findex > 23)
 	{
-		duration = ((int32_t) 80000) / climb;
+		index = 23;
+		m = 1.0;
 	}
-	else
+
+	if (findex < 0)
 	{
-		for (i = 0; mapDuration[i][0] > climb; i++)
-			;
-		part = ((climb - mapDuration[i][0])) / (mapDuration[i - 1][0] - mapDuration[i][0]);
-		duration = (mapDuration[i][1] + (part * (mapDuration[i - 1][1] - mapDuration[i][1])));
+		index = 0;
+		m = 0.0;
 	}
-	if(((int16_t)duration - TONPAUSE) > (int16_t)duration / 2)
-		return ((int16_t)duration - TONPAUSE);
-	else
-		return duration / 2;
+
+	m = round(m * 10) / 10.0;
+
+	int16_t start = src[index];
+
+	start = start + (float)((int16_t)src[index + 1] - start) * m;
+
+	return start;
 }
 
 uint8_t piepsen_on_off(void)
@@ -165,12 +177,9 @@ uint8_t piepsen_on_off(void)
     static uint64_t ms_last_off, ms_last_on;
     static uint8_t sinking = 0, climbing = 0, beepswitch = 0;
 
-    duration = map_eval_duration(climb_cms);
+    duration = get_near((float)climb_cms/100.0f, vario_leng);
+    pause = get_near((float)climb_cms/100.0f, vario_paus);
 
-    //if (duration <= TONPAUSE)
-    {
-        pause = duration*1.5;
-    }
     // Sinkton einschalten wenn er nicht an ist
     if ((climb_cms < SINKTRESHOLD) && (sinking == OFF))
     {
@@ -247,7 +256,7 @@ void p_climb(void)
 
 	if (p_on_off == ON)
 	{
-		p_set(STARTFREQUENCY + climb_cms / 1.5);
+		p_set(get_near((float)climb_cms/100.0f, vario_freq));
 	}
 	else if (p_on_off == OFF)
 	{
