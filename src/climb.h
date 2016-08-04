@@ -29,7 +29,7 @@
 
 /* adjust test values here */
 #define C_START_ALT_CM			200000
-#define	C_CLIMB_CMS				200			//resolution is CLIMB_SAMPLES_PER_SEC
+#define	C_CLIMB_CMS				100			//resolution is CLIMB_SAMPLES_PER_SEC
 /******/
 
 #define C_ADD				C_CLIMB_CMS/CLIMB_SAMPLES_PER_SEC

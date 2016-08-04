@@ -145,9 +145,9 @@ static uint16_t vario_leng[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 300, 200, 14
 //linear aproximation between two points
 uint16_t get_near(int16_t vario, uint16_t * src)
 {
-	float fvario = vario / 100.0f;
+	const int16_t fvario = vario/100;
 	int8_t findex = fvario + 12;
-	float m = fvario - floor(fvario);
+	float m = (vario-fvario*100) / 100.0f;
 
 	uint8_t index = findex;
 	if (findex > 23)
