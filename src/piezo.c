@@ -15,7 +15,7 @@
 #include "piezo.h"
 
 uint8_t p_dosink;
-uint64_t milli_seconds = 0;
+uint32_t milli_seconds = 0;
 
 void p_init(void)
 {
@@ -139,8 +139,8 @@ void p_beep(uint8_t n)
 // - this is default configuration, audio profiler is looking for these values. They are replaced then in hex file
 // - you can use http://audio.skybean.eu/ to create this using Make Code button
 static uint16_t vario_freq[] = {127, 130, 133, 136, 146, 159, 175, 198, 234, 283, 344, 415, 564, 701, 788, 846, 894, 927, 955, 985, 1008, 1037, 1070, 1106, 1141, };
-static uint16_t vario_leng[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 540, 438, 368, 312, 259, 219, 176, 138, 110, 81, 60, 46, 36, };
-static uint16_t vario_paus[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 320, 242, 189, 155, 134, 115, 95, 75, 55, 37, 30, 28, 28, };
+static uint16_t vario_paus[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 540, 438, 368, 312, 259, 219, 176, 138, 110, 81, 60, 46, 36, };
+static uint16_t vario_leng[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 320, 242, 189, 155, 134, 115, 95, 75, 55, 37, 30, 28, 28, };
 
 //linear aproximation between two points
 uint16_t get_near(int16_t vario, uint16_t * src)
@@ -172,7 +172,7 @@ uint8_t piepsen_on_off(void)
 {
 	uint8_t ret = 2;
 	uint16_t pause, duration;
-    static uint64_t ms_last_off, ms_last_on;
+    static uint32_t ms_last_off, ms_last_on;
     static uint8_t sinking = 0, climbing = 0, beepswitch = 0;
 
     duration = get_near(climb_cms, vario_leng);
