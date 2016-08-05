@@ -22,7 +22,7 @@
 /* do not succeed 150uS (2tau) charge time */
 
 /* charge time in uS */
-#define PIEZO_VOL	20//((F_CPU/1000000UL) * 150)
+#define PIEZO_VOL	((F_CPU/1000000UL) * 150)
 
 extern uint8_t p_dosink;
 
