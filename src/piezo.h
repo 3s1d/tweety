@@ -12,8 +12,10 @@
 
 #define PIEZO_SINK_EEPROM	0
 #define MINTONELENGTH		200
-#define ON					1
-#define OFF					0
+
+#define BEEP_ON			1
+#define BEEP_OFF		0
+#define BEEP_NOCHANGE		-1
 
 
 /* 3.3mH coil -> tau = 79uS */

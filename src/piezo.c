@@ -135,12 +135,21 @@ void p_beep(uint8_t n)
 }
 
 /* Sound profile */
-static uint16_t vario_freq[] = {127, 130, 133, 136, 146, 159, 175, 198, 234, 283, 344, 415, 564, 701, 788, 846, 894, 927, 955, 985, 1008, 1037, 1070, 1200, 1400, };
-static uint16_t vario_paus[] = {140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 500, 420, 350, 300, 250, 220, 190, 170, 150, 130, 120, 110, 100, };
-static uint16_t vario_leng[] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 240, 180, 120, 100, 90, 80, 70, 65, 60, 55, 50, 45, 40, };
+const int16_t vario_freq[] =
+{
+	127, 130, 133, 136, 146, 159, 175, 198, 234, 283, 344, 415, 564, 701, 788, 846, 894, 927, 955, 985, 1008, 1037, 1070, 1200, 1400
+};
+const int16_t vario_paus[] =
+{
+	140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 500, 420, 350, 300, 250, 220, 190, 170, 150, 130, 120, 110, 100
+};
+const int16_t vario_leng[] =
+{
+	40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 240, 180, 120, 100, 90, 80, 70, 65, 60, 55, 50, 45, 40
+};
 
 /* linear approximation between two samples */
-uint16_t get_near(int16_t vario, uint16_t * src)
+uint16_t get_near(int16_t vario, const int16_t * src)
 {
 	const int16_t fvario = vario/100;
 	int8_t findex = fvario + 12;
@@ -150,28 +159,28 @@ uint16_t get_near(int16_t vario, uint16_t * src)
 	if (findex > 23)
 	{
 		index = 23;
-		m = 1.0;
+		m = 1.0f;
 	}
 
 	if (findex < 0)
 	{
 		index = 0;
-		m = 0.0;
+		m = 0.0f;
 	}
 
 	int16_t start = src[index];
-	start = start + (float)((int16_t)src[index + 1] - start) * m;
+	start = start + ((float)(src[index + 1] - start)) * m;
 
 	return start;
 }
 
-uint8_t piepsen_on_off(void)
+int8_t beep_on_off(void)
 {
 	/* state */
 	static uint32_t time_ms = 0;
 	static uint32_t last_change_ms = 0;
-	static uint8_t beepswitch = 0;
-	uint8_t status = 2;
+	static uint8_t beepswitch = BEEP_OFF;			//toggles between BEEP_ON and BEEP_OFF
+	int8_t status = BEEP_NOCHANGE;
 
 	/* advance time */
 	time_ms += 2*OSR_8192_TIME;
@@ -181,28 +190,27 @@ uint8_t piepsen_on_off(void)
 	{
 		/* beeping */
 
-		const uint16_t t = get_near(climb_cms, beepswitch?vario_leng:vario_paus);
+		const uint32_t t = (uint32_t) get_near(climb_cms, beepswitch?vario_leng:vario_paus);
 		if(time_ms >= last_change_ms + t)
 		{
 			/* toggle state */
 			last_change_ms = time_ms;
 			beepswitch = !beepswitch;
 
-			if(beepswitch)
-				status = 1;
-			else
-				status = 0;
+			status = beepswitch;
 		}
 	}
 	else
 	{
 		/* intermediate state */
 
-		if(beepswitch == ON && time_ms > (last_change_ms + MINTONELENGTH))
+		if(beepswitch == BEEP_ON && time_ms > (last_change_ms + MINTONELENGTH))
 		{
+			/* turn off */
 			last_change_ms = time_ms;
-			beepswitch = OFF;
-			status = 0;
+			beepswitch = BEEP_OFF;
+
+			status = BEEP_OFF;
 		}
 	}
 
@@ -212,11 +220,11 @@ uint8_t piepsen_on_off(void)
 /* called every 40ms */
 void p_climb(void)
 {
-	uint8_t p_on_off = piepsen_on_off();
+	const int8_t p_on_off = beep_on_off();
 
-	if (p_on_off == ON)
+	if (p_on_off == BEEP_ON)
 		p_set(get_near(climb_cms, vario_freq));
-	else if(p_on_off == OFF)
+	else if(p_on_off == BEEP_OFF)
 		p_off();
 }
 
