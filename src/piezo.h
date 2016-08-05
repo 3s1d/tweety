@@ -11,16 +11,18 @@
 #define PIEZO_PIN		B,1
 
 #define PIEZO_SINK_EEPROM	0
-#define TONPAUSE				200
+
+#define TONPAUSE		200
 #define MINTONELENGTH		200
-#define ON					1
-#define OFF					0
+#define ON			1
+#define OFF			0
+
 
 /* 3.3mH coil -> tau = 79uS */
 /* do not succeed 150uS (2tau) charge time */
 
 /* charge time in uS */
-#define PIEZO_VOL	((F_CPU/1000000UL) * 150)
+#define PIEZO_VOL	20//((F_CPU/1000000UL) * 150)
 
 extern uint8_t p_dosink;
 

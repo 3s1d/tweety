@@ -30,10 +30,13 @@ ISR(TIMER0_COMPB_vect)
 	/*get d2, trigger d1 */
 	d2 = ms5637_get_reading_start_next(CMD_START_D1);
 
+//	uint8_t t=1;
+//	debug_put(&t, 1);
+
 	/* call piezo */
 	p_climb();
 
-//	uint8_t t=1;
+//	t=2;
 //	debug_put(&t, 1);
 }
 

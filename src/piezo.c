@@ -10,12 +10,12 @@
 #include <util/delay.h>
 
 #include "flexport.h"
-#include "climb.h"
 #include "button.h"
+#include "climb.h"
+#include "ms5637.h"
 #include "piezo.h"
 
 uint8_t p_dosink;
-uint32_t milli_seconds = 0;
 
 void p_init(void)
 {
@@ -134,20 +134,17 @@ void p_beep(uint8_t n)
 	}
 }
 
-//Sound profile
-// - 25 points total
-// - this is default configuration, audio profiler is looking for these values. They are replaced then in hex file
-// - you can use http://audio.skybean.eu/ to create this using Make Code button
+/* Sound profile */
 static uint16_t vario_freq[] = {127, 130, 133, 136, 146, 159, 175, 198, 234, 283, 344, 415, 564, 701, 788, 846, 894, 927, 955, 985, 1008, 1037, 1070, 1200, 1400, };
-static uint16_t vario_paus[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 650, 550, 490, 450, 370, 290, 230, 190, 160, 135, 120, 110, 100, };
+static uint16_t vario_pause[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 650, 550, 490, 450, 370, 290, 230, 190, 160, 135, 120, 110, 100, };
 static uint16_t vario_leng[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 300, 200, 140, 120, 110, 100, 90, 70, 60, 55, 50, 45, 40, };
 
-//linear aproximation between two points
+/* linear approximation between two samples */
 uint16_t get_near(int16_t vario, uint16_t * src)
 {
 	const int16_t fvario = vario/100;
 	int8_t findex = fvario + 12;
-	float m = (vario-fvario*100) / 100.0f;
+	float m = (vario-fvario*100) / 100.0f;		//todo
 
 	uint8_t index = findex;
 	if (findex > 23)
@@ -163,7 +160,6 @@ uint16_t get_near(int16_t vario, uint16_t * src)
 	}
 
 	int16_t start = src[index];
-
 	start = start + (float)((int16_t)src[index + 1] - start) * m;
 
 	return start;
@@ -171,94 +167,116 @@ uint16_t get_near(int16_t vario, uint16_t * src)
 
 uint8_t piepsen_on_off(void)
 {
-	uint8_t ret = 2;
-	uint16_t pause, duration;
-    static uint32_t ms_last_off, ms_last_on;
-    static uint8_t sinking = 0, climbing = 0, beepswitch = 0;
+/*	static uint8_t sinking = 0, climbing = 0;
 
-    duration = get_near(climb_cms, vario_leng);
-    pause = get_near(climb_cms, vario_paus);
+	// Sinkton einschalten wenn er nicht an ist
+	if ((climb_cms < SINKTRESHOLD) && (sinking == OFF))
+		sinking = ON;
+	// Sinkton ausschalten wenn er an ist
+	if ((climb_cms >= SINKTRESHOLD) && (sinking == ON))
+		sinking = OFF;
+	// Steigton einschalten wenn er nicht an ist
+	if ((climb_cms > CLIMBTRESHOLD) && (climbing == OFF))
+		climbing = ON;
+	// Steigton ausschalten wenn er an ist
+	if ((climb_cms <= CLIMBTRESHOLD) && climbing == ON)
+		climbing = OFF;
 
-    // Sinkton einschalten wenn er nicht an ist
-    if ((climb_cms < SINKTRESHOLD) && (sinking == OFF))
-    {
-    		sinking = ON;
-    }
-    // Sinkton ausschalten wenn er an ist
-    if ((climb_cms >= SINKTRESHOLD) && (sinking == ON))
-    {
-    		sinking = OFF;
-    }
-    // Steigton einschalten wenn er nicht an ist
-    if ((climb_cms > CLIMBTRESHOLD) && (climbing == OFF))
-    {
-    		climbing = ON;
-    }
-    // Steigton ausschalten wenn er an ist
-    if ((climb_cms <= CLIMBTRESHOLD) && climbing == ON)
-    {
-    		climbing = OFF;
-    }
+	//////////////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////////////
+	if (sinking == ON && (milli_seconds > (ms_last_off + MINTONELENGTH)))
+	{
+		ret = 1;
+		ms_last_on = milli_seconds;
+		beepswitch = ON;
+	}
+	else
+	{
+		if (climbing == ON)
+		{
+			if (beepswitch == ON)
+			{
+				if (milli_seconds > (ms_last_on + duration))
+				{
+					ret = 0;
+					ms_last_off = milli_seconds;
+					beepswitch = OFF;
+				}
+			}
+			else
+			{
+				if (milli_seconds > (ms_last_off + pause))
+				{
+					ret = 1;
+					ms_last_on = milli_seconds;
+					beepswitch = ON;
+				}
+			}
+		}
+		else
+		{
+			if (!((sinking == ON) || (climbing == ON)) && (beepswitch == ON) && milli_seconds > (ms_last_on + MINTONELENGTH))
+			{
+				ret = 0;
+				ms_last_off = milli_seconds;
+				beepswitch = OFF;
+			}
+		}
+	}
+*/
 
-    if (sinking == ON && (milli_seconds > (ms_last_off + MINTONELENGTH)))
-    {
-        ret = 1;
-        ms_last_on = milli_seconds;
-        beepswitch = ON;
-    }
-    else
-    {
-        if (climbing == ON)
-        {
-            if (beepswitch == ON)
-            {
-                if (milli_seconds > (ms_last_on + duration))
-                {
-                    ret = 0;
-                    ms_last_off = milli_seconds;
-                    beepswitch = OFF;
-                }
-            }
-            else
-            {
-                if (milli_seconds > (ms_last_off + pause))
-                {
-                    ret = 1;
-                    ms_last_on = milli_seconds;
-                    beepswitch = ON;
-                }
-            }
-        }
-        else
-        {
-            if (!((sinking == ON) || (climbing == ON)) && (beepswitch == ON) && milli_seconds > (ms_last_on + MINTONELENGTH))
-            {
-                ret = 0;
-                ms_last_off = milli_seconds;
-                beepswitch = OFF;
-            }
-        }
-    }
-    return (ret);
+	/* state */
+	static uint32_t time_ms = 0;
+	static uint32_t last_change_ms = 0;
+	static uint8_t beepswitch = 0;
+
+	/* advance time */
+	time_ms += 2*OSR_8192_TIME;
+
+	/* caution: sinking gets treated differently than climbing!!! */
+	//note: shouldn't we fix this?
+	if (climb_cms < SINKTHRESHOLD)
+	{
+		/* sinking */
+
+		if(p_dosink && time_ms > (last_change_ms + MINTONELENGTH))
+		{
+			last_change_ms = time_ms;
+			beepswitch = ON;
+		}
+	}
+	else if (climb_cms > CLIMBTRESHOLD)
+	{
+		/* climbing */
+
+		const uint16_t t = get_near(climb_cms, beepswitch?vario_leng:vario_pause);
+		if(time_ms >= last_change_ms + t)
+		{
+			/* toggle state */
+			last_change_ms = time_ms;
+			beepswitch = !beepswitch;
+		}
+	}
+	else
+	{
+		/* intermediate state */
+
+		if(beepswitch == ON && time_ms > (last_change_ms + MINTONELENGTH))
+		{
+			last_change_ms = time_ms;
+			beepswitch = OFF;
+		}
+	}
+
+	return beepswitch;
 }
 
 /* called every 40ms */
 void p_climb(void)
 {
-	uint8_t p_on_off;
-
-	milli_seconds += 40;
-
-	p_on_off = piepsen_on_off();
-
-	if (p_on_off == ON)
-	{
+	if (piepsen_on_off())
 		p_set(get_near(climb_cms, vario_freq));
-	}
-	else if (p_on_off == OFF)
-	{
+	else
 		p_off();
-	}
 }
+

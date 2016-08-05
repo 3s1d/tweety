@@ -58,7 +58,7 @@ int main(void)
 		debug_put((uint8_t *) &climb_cms, sizeof(uint16_t));
 
 		/* note: value heavily depends on F_CPU */
-		if(pressed > 3)
+		if(pressed > 5)
 		{
 			sleep();
 			pressed = 0;
