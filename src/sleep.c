@@ -61,7 +61,7 @@ void sleep(void)
 		/* quickly indicate we are up and running */
 		//note: longer beeps confuses me...
 		p_set(1000);
-		_delay_ms(30);
+		_delay_ms(100);
 		p_off();
 
 		for(uint8_t i=0; i < 50; i++)
