@@ -136,8 +136,8 @@ void p_beep(uint8_t n)
 
 /* Sound profile */
 static uint16_t vario_freq[] = {127, 130, 133, 136, 146, 159, 175, 198, 234, 283, 344, 415, 564, 701, 788, 846, 894, 927, 955, 985, 1008, 1037, 1070, 1200, 1400, };
-static uint16_t vario_pause[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 650, 550, 490, 450, 370, 290, 230, 190, 160, 135, 120, 110, 100, };
-static uint16_t vario_leng[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 300, 200, 140, 120, 110, 100, 90, 70, 60, 55, 50, 45, 40, };
+static uint16_t vario_paus[] = {140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 500, 420, 350, 300, 250, 220, 190, 170, 150, 130, 120, 110, 100, };
+static uint16_t vario_leng[] = {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 240, 180, 120, 100, 90, 80, 70, 65, 60, 55, 50, 45, 40, };
 
 /* linear approximation between two samples */
 uint16_t get_near(int16_t vario, uint16_t * src)
@@ -167,94 +167,31 @@ uint16_t get_near(int16_t vario, uint16_t * src)
 
 uint8_t piepsen_on_off(void)
 {
-/*	static uint8_t sinking = 0, climbing = 0;
-
-	// Sinkton einschalten wenn er nicht an ist
-	if ((climb_cms < SINKTRESHOLD) && (sinking == OFF))
-		sinking = ON;
-	// Sinkton ausschalten wenn er an ist
-	if ((climb_cms >= SINKTRESHOLD) && (sinking == ON))
-		sinking = OFF;
-	// Steigton einschalten wenn er nicht an ist
-	if ((climb_cms > CLIMBTRESHOLD) && (climbing == OFF))
-		climbing = ON;
-	// Steigton ausschalten wenn er an ist
-	if ((climb_cms <= CLIMBTRESHOLD) && climbing == ON)
-		climbing = OFF;
-
-	//////////////////////////////////////////////////////////////////////////////////
-
-	if (sinking == ON && (milli_seconds > (ms_last_off + MINTONELENGTH)))
-	{
-		ret = 1;
-		ms_last_on = milli_seconds;
-		beepswitch = ON;
-	}
-	else
-	{
-		if (climbing == ON)
-		{
-			if (beepswitch == ON)
-			{
-				if (milli_seconds > (ms_last_on + duration))
-				{
-					ret = 0;
-					ms_last_off = milli_seconds;
-					beepswitch = OFF;
-				}
-			}
-			else
-			{
-				if (milli_seconds > (ms_last_off + pause))
-				{
-					ret = 1;
-					ms_last_on = milli_seconds;
-					beepswitch = ON;
-				}
-			}
-		}
-		else
-		{
-			if (!((sinking == ON) || (climbing == ON)) && (beepswitch == ON) && milli_seconds > (ms_last_on + MINTONELENGTH))
-			{
-				ret = 0;
-				ms_last_off = milli_seconds;
-				beepswitch = OFF;
-			}
-		}
-	}
-*/
-
 	/* state */
 	static uint32_t time_ms = 0;
 	static uint32_t last_change_ms = 0;
 	static uint8_t beepswitch = 0;
+	uint8_t status = 2;
 
 	/* advance time */
 	time_ms += 2*OSR_8192_TIME;
 
-	/* caution: sinking gets treated differently than climbing!!! */
-	//note: shouldn't we fix this?
-	if (climb_cms < SINKTHRESHOLD)
+	//p_dosink=1;
+	if ((climb_cms >= CLIMBTRESHOLD) || ((climb_cms <= SINKTHRESHOLD) && p_dosink))
 	{
-		/* sinking */
+		/* beeping */
 
-		if(p_dosink && time_ms > (last_change_ms + MINTONELENGTH))
-		{
-			last_change_ms = time_ms;
-			beepswitch = ON;
-		}
-	}
-	else if (climb_cms > CLIMBTRESHOLD)
-	{
-		/* climbing */
-
-		const uint16_t t = get_near(climb_cms, beepswitch?vario_leng:vario_pause);
+		const uint16_t t = get_near(climb_cms, beepswitch?vario_leng:vario_paus);
 		if(time_ms >= last_change_ms + t)
 		{
 			/* toggle state */
 			last_change_ms = time_ms;
 			beepswitch = !beepswitch;
+
+			if(beepswitch)
+				status = 1;
+			else
+				status = 0;
 		}
 	}
 	else
@@ -265,18 +202,21 @@ uint8_t piepsen_on_off(void)
 		{
 			last_change_ms = time_ms;
 			beepswitch = OFF;
+			status = 0;
 		}
 	}
 
-	return beepswitch;
+	return status;
 }
 
 /* called every 40ms */
 void p_climb(void)
 {
-	if (piepsen_on_off())
+	uint8_t p_on_off = piepsen_on_off();
+
+	if (p_on_off == ON)
 		p_set(get_near(climb_cms, vario_freq));
-	else
+	else if(p_on_off == OFF)
 		p_off();
 }
 

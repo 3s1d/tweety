@@ -11,11 +11,9 @@
 #define PIEZO_PIN		B,1
 
 #define PIEZO_SINK_EEPROM	0
-
-#define TONPAUSE		200
 #define MINTONELENGTH		200
-#define ON			1
-#define OFF			0
+#define ON					1
+#define OFF					0
 
 
 /* 3.3mH coil -> tau = 79uS */
