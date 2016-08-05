@@ -38,9 +38,8 @@ void sleep(void)
 	PCMSK2 = _BV(PCINT18);
 	PCICR = _BV(PCIE2);
 
-	/* debug */
-	uint8_t d = 10;
-	debug_put(&d, 1);
+	//uint8_t d = 10;
+	//debug_put(&d, 1);
 
 	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 	uint8_t sleep = 1;
@@ -52,8 +51,8 @@ void sleep(void)
 		/* minimal button press time */
 		_delay_ms(500);
 
-		d = 13;
-		debug_put(&d, 1);
+		//d = 13;
+		//debug_put(&d, 1);
 
 		/* way too short */
 		if(!btn_pressed())
@@ -77,9 +76,8 @@ void sleep(void)
 		}
 	}
 
-	/* debug */
-	d = 11;
-	debug_put(&d, 1);
+	//d = 11;
+	//debug_put(&d, 1);
 
 	/* disable PC int */
 	PCICR = 0;

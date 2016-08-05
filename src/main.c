@@ -43,10 +43,7 @@ int main(void)
 		p_config();
 	climb_init();
 
-	uint8_t t=0;
-	debug_put(&t, 1);
-
-	debug_put(&p_dosink, 1);
+	//debug_put(&p_dosink, 1);
 
 	/* instantaneously go into sleep mode */
 	uint8_t pressed = UINT8_MAX-1;
@@ -55,7 +52,7 @@ int main(void)
 		/* update climb rate */
 		climb_update();
 
-		debug_put((uint8_t *) &climb_cms, sizeof(uint16_t));
+		//debug_put((uint8_t *) &climb_cms, sizeof(uint16_t));
 
 		/* note: value heavily depends on F_CPU */
 		if(pressed > 5)
