@@ -6,7 +6,8 @@
  */
 
 #include <avr/io.h>
-#include <avr/eeprom.h>
+//#include <avr/eeprom.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 
 #include "flexport.h"
@@ -14,6 +15,7 @@
 #include "climb.h"
 #include "ms5637.h"
 #include "piezo.h"
+
 
 uint8_t p_dosink;
 
@@ -27,7 +29,16 @@ void p_init(void)
 	OCR1A = PIEZO_VOL;
 
 	/* load config */
-	p_dosink = eeprom_read_byte((uint8_t *) PIEZO_SINK_EEPROM);
+	/* for some reason, this seems to be broken in avrlibc-2.0.0 */
+	//p_dosink = eeprom_read_byte((uint8_t *) PIEZO_SINK_EEPROM);
+
+	/* loads address */
+	EEARL = PIEZO_SINK_EEPROM;
+
+	/* read byte */
+	EECR = 1<<EERE;
+	p_dosink = EEDR;
+
 }
 
 void p_config(void)
@@ -55,7 +66,21 @@ void p_config(void)
 				if(++pressed >= 10)
 				{
 					/* store config */
-					eeprom_write_byte((uint8_t *) PIEZO_SINK_EEPROM, p_dosink);
+
+					/* for some reason, this seems to be broken in avrlibc-2.0.0 */
+					//eeprom_write_byte((uint8_t *) PIEZO_SINK_EEPROM, p_dosink);
+
+					/* loads address */
+					EEARL = PIEZO_SINK_EEPROM;
+					/* loads current byte */
+					EEDR = p_dosink;
+
+					cli();
+					/* master write enable */
+					EECR = (1<<EEMPE);
+					/* strobe eeprom write, must be within 4cycles -> no interrupts */
+					EECR = (1<<EEMPE)|(1<<EEPE);
+					sei();
 
 					return;
 				}

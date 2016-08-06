@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <avr/io.h>
 #include <avr/interrupt.h>
 
 #include "TWI_Master.h"
