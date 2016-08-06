@@ -161,10 +161,6 @@ void climb_update(void)
 
 	/* final climb value */
 	volatile int_fast16_t climb = (LR_num*CLIMB_SAMPLES_PER_SEC) / LR_den;
-	if(climb > 1000)
-		climb = 1000;
-	if(climb < -1000)
-		climb = -1000;
 
 	/* make publicly available */
 	cli();

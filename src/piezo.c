@@ -141,16 +141,12 @@ const int16_t vario_freq[] =
 };
 const int16_t vario_paus[] =
 {
-		123,135,147,157,168,180,194,201,230,253,302,517,402,345,254,235,214,203,178,164,137,124,106,70,32
+		0,0,0,0,0,0,0,0,0,0,0,517,402,345,254,235,214,203,178,164,137,124,106,70,32
 };
 const int16_t vario_leng[] =
 {
-		61,61,61,61,61,62,62,63,63,63,96,160,162,196,217,181,151,136,129,115,105,75,54,43,23
+		5000,5000,5000,5000,5000,5000,5000,5000,5000,5000,1196,160,162,196,217,181,151,136,129,115,105,75,54,43,23
 };
-
-
-
-
 
 /* Sound profile */
 /*
@@ -167,12 +163,13 @@ const int16_t vario_leng[] =
 	40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 240, 180, 120, 100, 90, 80, 70, 65, 60, 55, 50, 45, 40
 };
 */
+
 /* linear approximation between two samples */
 uint16_t get_near(int16_t vario, const int16_t * src)
 {
 	const int16_t fvario = vario/100;
 	int8_t findex = fvario + 12;
-	float m = (vario-fvario*100) / 100.0f;		//todo
+	int16_t m = (vario-fvario*100) ;
 
 	uint8_t index = findex;
 	if (findex > 23)
@@ -188,7 +185,7 @@ uint16_t get_near(int16_t vario, const int16_t * src)
 	}
 
 	int16_t start = src[index];
-	start = start + ((float)(src[index + 1] - start)) * m;
+	start = start + (((src[index + 1] - start)) * m) / 100;
 
 	return start;
 }
@@ -218,6 +215,8 @@ int8_t beep_on_off(void)
 
 			status = beepswitch;
 		}
+		if(climb_cms <= SINKTHRESHOLD)
+			status = 1;
 	}
 	else
 	{
