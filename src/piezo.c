@@ -162,15 +162,15 @@ void p_beep(uint8_t n)
 
 const int16_t vario_freq[] =
 {
-		42,47,49,55,64,73,88,126,145,190,296,507,745,934,977,1019,1070,1122,1155,1223,1257,1342,1394,1446,1502
+		42, 47, 49, 55, 64, 73, 88, 126, 145, 190, 296, 507, 745, 934, 977, 1019, 1070, 1122, 1155, 1223, 1257, 1342, 1394, 1446, 1502
 };
 const int16_t vario_paus[] =
 {
-		0,0,0,0,0,0,0,0,0,0,0,517,402,345,254,235,214,203,178,164,137,124,106,70,32
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 517, 402, 345, 254, 235, 214, 203, 178, 164, 137, 124, 106, 70, 32
 };
 const int16_t vario_leng[] =
 {
-		5000,5000,5000,5000,5000,5000,5000,5000,5000,5000,1196,160,162,196,217,181,151,136,129,115,105,75,54,43,23
+		2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 1196, 160, 162, 196, 217, 181, 151, 136, 129, 115, 105, 75, 54, 43, 23
 };
 
 /* Sound profile */
@@ -227,12 +227,12 @@ int8_t beep_on_off(void)
 	time_ms += 2*OSR_8192_TIME;
 
 	//p_dosink=1;
-	if ((climb_cms >= CLIMBTRESHOLD) || ((climb_cms <= SINKTHRESHOLD) && p_dosink))
+	if ((climb_cms >= CLIMBTRESHOLD) || (p_dosink && (climb_cms <= SINKTHRESHOLD)))
 	{
 		/* beeping */
 
 		const uint32_t t = (uint32_t) get_near(climb_cms, beepswitch?vario_leng:vario_paus);
-		if(time_ms >= last_change_ms + t)
+		if(time_ms >= last_change_ms + t && t > 0)
 		{
 			/* toggle state */
 			last_change_ms = time_ms;
@@ -240,8 +240,6 @@ int8_t beep_on_off(void)
 
 			status = beepswitch;
 		}
-		if(climb_cms <= SINKTHRESHOLD)
-			status = 1;
 	}
 	else
 	{
@@ -253,7 +251,7 @@ int8_t beep_on_off(void)
 			last_change_ms = time_ms;
 			beepswitch = BEEP_OFF;
 
-			status = BEEP_OFF;
+			status = beepswitch;
 		}
 	}
 
