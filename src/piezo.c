@@ -160,6 +160,7 @@ void p_beep(uint8_t n)
 }
 
 
+/* Sound profile */
 const int16_t vario_freq[] =
 {
 		42, 47, 49, 55, 64, 73, 88, 126, 145, 190, 296, 507, 745, 934, 977, 1019, 1070, 1122, 1155, 1223, 1257, 1342, 1394, 1446, 1502
@@ -170,24 +171,8 @@ const int16_t vario_paus[] =
 };
 const int16_t vario_leng[] =
 {
-		2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 1196, 160, 162, 196, 217, 181, 151, 136, 129, 115, 105, 75, 54, 43, 23
+		240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 1196, 160, 162, 196, 217, 181, 151, 136, 129, 115, 105, 75, 54, 43, 23
 };
-
-/* Sound profile */
-/*
-const int16_t vario_freq[] =
-{
-	127, 130, 133, 136, 146, 159, 175, 198, 234, 283, 344, 415, 564, 701, 788, 846, 894, 927, 955, 985, 1008, 1037, 1070, 1200, 1400
-};
-const int16_t vario_paus[] =
-{
-	140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 140, 500, 420, 350, 300, 250, 220, 190, 170, 150, 130, 120, 110, 100
-};
-const int16_t vario_leng[] =
-{
-	40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 240, 180, 120, 100, 90, 80, 70, 65, 60, 55, 50, 45, 40
-};
-*/
 
 /* linear approximation between two samples */
 uint16_t get_near(int16_t vario, const int16_t * src)
@@ -236,9 +221,13 @@ int8_t beep_on_off(void)
 		{
 			/* toggle state */
 			last_change_ms = time_ms;
-			beepswitch = !beepswitch;
 
-			status = beepswitch;
+			/* only toggle state in case next state's values differs from 0 */
+			if(get_near(climb_cms, beepswitch?vario_paus:vario_leng) > 0)
+			{
+				beepswitch = !beepswitch;
+				status = beepswitch;
+			}
 		}
 	}
 	else
