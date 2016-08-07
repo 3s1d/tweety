@@ -232,7 +232,7 @@ int8_t beep_on_off(void)
 		/* beeping */
 
 		const uint32_t t = (uint32_t) get_near(climb_cms, beepswitch?vario_leng:vario_paus);
-		if(time_ms >= last_change_ms + t && t > 0)
+		if(time_ms >= last_change_ms + t)
 		{
 			/* toggle state */
 			last_change_ms = time_ms;
