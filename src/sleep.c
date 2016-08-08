@@ -19,6 +19,7 @@
 
 #include "debug.h"
 
+
 ISR(PCINT2_vect)
 {
 
@@ -94,4 +95,7 @@ void sleep(void)
 
 	/* start up system again */
 	climb_init();
+
+	/* reset auto off */
+	rest_time = 0;
 }

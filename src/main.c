@@ -45,12 +45,24 @@ int main(void)
 
 	//debug_put(&p_dosink, 1);
 
+	/* reset auto off */
+	rest_time = 0;
+
 	/* instantaneously go into sleep mode */
 	uint8_t pressed = UINT8_MAX-1;
 	while(1)
 	{
 		/* update climb rate */
 		climb_update();
+
+		/* check for flight condition */
+		if((climb_cms < 80) && (climb_cms > -80))
+			rest_time++;
+		else
+			rest_time = 0;
+		/* switch off about 30 minutes without climb or sink */
+		if(rest_time > HALFHOUR)
+			sleep();
 
 		//debug_put((uint8_t *) &climb_cms, sizeof(uint16_t));
 
