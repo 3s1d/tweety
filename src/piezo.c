@@ -195,7 +195,7 @@ uint16_t get_near(int16_t vario, const int16_t * src)
 	}
 
 	int16_t start = src[index];
-	start = start + (((src[index + 1] - start)) * m) / 100;
+	start = start + ((src[index + 1] - start) * m) / 100;
 
 	return start;
 }
