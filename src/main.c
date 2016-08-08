@@ -60,14 +60,12 @@ int main(void)
 			rest_time++;
 		else
 			rest_time = 0;
-		/* switch off about 30 minutes without climb or sink */
-		if(rest_time > HALFHOUR)
-			sleep();
 
 		//debug_put((uint8_t *) &climb_cms, sizeof(uint16_t));
 
 		/* note: value heavily depends on F_CPU */
-		if(pressed > 5)
+		/* also switch off about 30 minutes without climb or sink */
+		if((pressed > 5) || (rest_time > HALFHOUR))
 		{
 			sleep();
 			pressed = 0;
