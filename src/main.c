@@ -15,14 +15,13 @@
 #include "climb.h"
 #include "piezo.h"
 #include "sleep.h"
+#include "main.h"
 
 #include "debug.h"
 
 
 int main(void)
 {
-	//todo: auto off
-
 	sei();
 
 	/* enable pull-ups for all unused ports (reduces standby power) */
@@ -45,11 +44,12 @@ int main(void)
 
 	//debug_put(&p_dosink, 1);
 
-	/* reset auto off */
-	rest_time = 0;
+	/* auto off */
+	uint16_t idle_time = 0;
 
-	/* instantaneously go into sleep mode */
+	/* button counter; instantaneously go into sleep mode @ power-up */
 	uint8_t pressed = UINT8_MAX-1;
+
 	while(1)
 	{
 		/* update climb rate */
@@ -57,18 +57,21 @@ int main(void)
 
 		/* check for flight condition */
 		if((climb_cms < 80) && (climb_cms > -80))
-			rest_time++;
+			idle_time++;
 		else
-			rest_time = 0;
+			idle_time = 0;
 
 		//debug_put((uint8_t *) &climb_cms, sizeof(uint16_t));
 
-		/* note: value heavily depends on F_CPU */
+		/* note: values heavily depends on F_CPU */
 		/* also switch off about 30 minutes without climb or sink */
-		if((pressed > 5) || (rest_time > HALFHOUR))
+		if((pressed > 5) || (idle_time > MAINLOOP_HALFHOUR))
 		{
 			sleep();
+
+			/* reset enter states */
 			pressed = 0;
+			idle_time = 0;
 		}
 
 		/* handle button */
