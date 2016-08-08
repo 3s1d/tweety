@@ -171,7 +171,7 @@ const int16_t vario_paus[] =
 };
 const int16_t vario_leng[] =
 {
-		240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 1196, 160, 162, 196, 217, 181, 151, 136, 129, 115, 105, 75, 54, 43, 23
+		240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 240, 160, 162, 196, 217, 181, 151, 136, 129, 115, 105, 75, 54, 43, 23
 };
 
 /* linear approximation between two samples */
@@ -185,13 +185,13 @@ uint16_t get_near(int16_t vario, const int16_t * src)
 	if (findex > 23)
 	{
 		index = 23;
-		m = 1.0f;
+		m = 100;
 	}
 
 	if (findex < 0)
 	{
 		index = 0;
-		m = 0.0f;
+		m = 0;
 	}
 
 	int16_t start = src[index];
