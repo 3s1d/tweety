@@ -11,6 +11,7 @@
 #include <util/delay.h>
 
 #include "flexport.h"
+#include "battery.h"
 #include "button.h"
 #include "climb.h"
 #include "ms5637.h"
@@ -129,8 +130,15 @@ void p_hello(void)
 	p_off();
 	_delay_ms(75);
 	p_set(1200);
-	_delay_ms(100);
+	//_delay_ms(100);
+	uint8_t bat_state = battery(10);	// takes 100ms
 	p_off();
+
+	/* distinguish hello from battery */
+	_delay_ms(500);
+
+	/* indicate battery state */
+	p_beep(bat_state);
 }
 
 void p_bye(void)

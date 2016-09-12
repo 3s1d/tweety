@@ -8,6 +8,6 @@
 #ifndef BATTERY_H_
 #define BATTERY_H_
 
-uint8_t battery(void);
+uint8_t battery(uint8_t rep);
 
 #endif /* BATTERY_H_ */

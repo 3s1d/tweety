@@ -29,6 +29,7 @@ void sleep(void)
 {
 	/* prepare system */
 	climb_deinit();
+	_delay_ms(250);
 
 	p_bye();
 
@@ -64,6 +65,7 @@ void sleep(void)
 		p_set(1000);
 		_delay_ms(100);
 		p_off();
+		_delay_ms(100);
 
 		for(uint8_t i=0; i < 50; i++)
 		{
@@ -85,13 +87,6 @@ void sleep(void)
 
 	/* indicate wakeup */
 	p_hello();
-
-	/* distinguish hello from battery */
-	_delay_ms(500);
-
-	/* indicate battery state */
-	//note: the previous 'power on'-beep is important as it stresses the battery a little
-	p_beep(battery());
 
 	/* start up system again */
 	climb_init();
