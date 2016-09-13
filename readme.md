@@ -1,4 +1,4 @@
-# Skytrxx Tweety
+# Skytraxx Tweety
 A low-cost audio-only variometer which is fully open hardware/source and Arduino compatible.
 It uses a [MS5637](http://www.mouser.com/new/measurement-specialties/measurement-specialties-ms5637/) pressure sensor in combination with [Linear Regression](https://en.wikipedia.org/wiki/Linear_regression) to estimate the current climb rate. All the computations are done on an Atmel [Attiny88](http://www.atmel.com/devices/ATTINY88.aspx). The CR2450 battery should last a whole season...
 
@@ -7,12 +7,17 @@ It uses a [MS5637](http://www.mouser.com/new/measurement-specialties/measurement
 You can build it on your own or buy it in our shop and modify it as you like.
 
 ## Operation
-Press the button until you here a short beep. Release the button within in 3 seconds and Tweety turns on. You will here the welcome sound, followed by 0.5sec and the battery state:
+
+### Turn on
+Press the button until you here a short beep. Release the button within in 3 seconds and Tweety turns on. You will here the welcome sound, followed by 0.5sec pause and the battery state:
 - 2 beeps: Battery is good
 - 1 beep: Battery is okay
 - no beep: You should consider changing the battery
 
-## Configuration
+### Turn off
+Press the button until you hear the bye sound. Release the button.
+
+### Configuration
 The sink tone can be switched on or off.
 Remove the battery. Press and hold the button while re-inserting the coin cell. Release the button. 
 - 2 beeps: sink tone on
