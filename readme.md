@@ -22,6 +22,7 @@ The sink tone can be switched on or off.
 Remove the battery. Press and hold the button while re-inserting the coin cell. Release the button. 
 - 2 beeps: sink tone on
 - 1 beep: sink tone off
+
 A short press changes the settings. Use long press (4 sec.) to store the setting and to enter the normal operation mode again.
 
 ## Settings
@@ -29,5 +30,6 @@ See `climb.h`
 - Climb threshold: > 0.5m/s
 - Sink threshold: < -2.5m/s
 - Averaging interval: 1.5 sec
+
 If you want to change those settings or change the vario tone profile ('piezo.c'), you need to recompile and upload the sources.
 
