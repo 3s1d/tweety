@@ -17,6 +17,9 @@ Press the button until you here a short beep. Release the button within in 3 sec
 ### Turn off
 Press the button until you hear the bye sound. Release the button.
 
+### Auto-off
+Tweety will shutdown itself if in the past 30 min all climb rate were within -0.8 m/s to 0.8 m/s.
+
 ### Configuration
 The sink tone can be switched on or off.
 Remove the battery. Press and hold the button while re-inserting the coin cell. Release the button. 
