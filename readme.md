@@ -4,7 +4,7 @@ It uses a [MS5637](http://www.mouser.com/new/measurement-specialties/measurement
 
 ![Tweety](https://github.com/3s1d/tweety/raw/master/doc/tweety.png)
 
-You can build it on your own or buy it in our shop and modify it as you like.
+You can build it on your own or buy it in our [shop](https://www.skytraxx.eu/shop?product_id=290) and modify it as you like.
 
 ## Operation
 
