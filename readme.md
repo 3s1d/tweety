@@ -27,7 +27,7 @@ A short press changes the settings. Use long press (4 sec.) to store the setting
 
 ## Settings
 See `climb.h`
-- Climb threshold: > 0.5m/s
+- Climb threshold: > 0.3m/s
 - Sink threshold: < -2.5m/s
 - Averaging interval: 1.5 sec
 
