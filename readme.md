@@ -31,5 +31,5 @@ See `climb.h`
 - Sink threshold: < -2.5m/s
 - Averaging interval: 1.5 sec
 
-If you want to change those settings or change the vario tone profile ('piezo.c'), you need to recompile and upload the sources.
+If you want to change those settings or change the vario tone profile (`piezo.c`), you need to recompile and upload the sources.
 
