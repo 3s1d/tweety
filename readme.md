@@ -20,8 +20,8 @@ Press the button until you hear the bye sound. Release the button.
 ### Configuration
 The sink tone can be switched on or off.
 Remove the battery. Press and hold the button while re-inserting the coin cell. Release the button. 
-- 2 beeps: sink tone on
-- 1 beep: sink tone off
+- 2 beeps: Sink tone on
+- 1 beep: Sink tone off
 
 A short press changes the settings. Use long press (4 sec.) to store the setting and to enter the normal operation mode again.
 
