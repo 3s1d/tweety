@@ -50,15 +50,26 @@ void sleep(void)
 		/* sleep */
 		sleep_mode();
 
-		/* minimal button press time */
-		_delay_ms(500);
+		/* switch de-bounce */
+		_delay_ms(100);
+
+		/* minimal button press time 1.5sec */
+		uint8_t i;
+		for(i=0; i<140; i++)
+		{
+			/* way too short */
+			if(!btn_pressed())
+			{
+				i = 255;
+				break;
+			}
+			_delay_ms(10);
+		}
+		if(i == 255)
+			continue;
 
 		//d = 13;
 		//debug_put(&d, 1);
-
-		/* way too short */
-		if(!btn_pressed())
-			continue;
 
 		/* quickly indicate we are up and running */
 		//note: longer beeps confuses me...
@@ -67,7 +78,7 @@ void sleep(void)
 		p_off();
 		_delay_ms(100);
 
-		for(uint8_t i=0; i < 50; i++)
+		for(i=0; i < 10; i++)
 		{
 			/* button released in time -> power on */
 			if(!btn_pressed())
