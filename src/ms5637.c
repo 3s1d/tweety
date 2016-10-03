@@ -32,6 +32,7 @@ int8_t ms5637_init(void)
 	messageBuf[0] = CMD_RESET;
 	if(TWIM_write(MS5637_ADDR, messageBuf, 1) != TRUE)
 		return -1;
+	_delay_ms(10);
 
 	/* read prom */
 	for(uint8_t i = 0; i < 7; i++)

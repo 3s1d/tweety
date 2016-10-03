@@ -38,9 +38,9 @@ inline int32_t ms5637_get_pressure(int32_t d1, int32_t d2)
 	if(d1 == 0 || d2 == 0)
 		return 0;
 
-	int32_t dt = d2 - ((uint32_t)c[5]<<8);
-	int32_t temp = 2000 + (int32_t)(((int64_t)dt * (uint64_t)c[6])>>23);
-
+/*	int32_t dt = d2 - ((uint32_t)c[5]<<8);
+	int32_t temp = 2000 + (int32_t)(((int64_t)dt * (int64_t)c[6])/(1LL<<23));
+*/
 	/* Second order temperature compensation */
 	//int64_t t2;
 	//if(temp >= 2000)
@@ -54,9 +54,53 @@ inline int32_t ms5637_get_pressure(int32_t d1, int32_t d2)
 	//	t2 = 3 * (dt * dt) / (1LL<<33);
 	//}
 	//temperature = (float)(temp - t2) / 100;
+/*
+	int64_t off = (((int64_t)c[2])<<17) + ((dt * ((int64_t)c[4]))/(1LL<<6));
+	int64_t sens = (((int64_t)c[1])<<16) + ((dt * ((int64_t)c[3]))/(1LL<<7));
+*/
+	/* Second order temperature compensation for pressure */
+/*	if(temp < 2000)
+	{
+*/		/* Low temperature */
+/*		int32_t tx = temp-2000;
+		tx *= tx;
+		int32_t off2 = (61 * tx) / (1<<4);
+		int32_t sens2 = (29 * tx) / (1<<4);
+		if(temp < -1500)
+		{
+*/			/* Very low temperature */
+/*			tx = temp+1500;
+			tx *= tx;
+			off2 += 17 * tx;
+			sens2 += 9 * tx;
+		}
+		off -= off2;
+		sens -= sens2;
+	}
 
-	int64_t off = ((uint64_t)c[2]<<17) + ((dt * ((uint64_t)c[4]))>>6);
-	int64_t sens = ((uint64_t)c[1]<<16) + ((dt * ((uint64_t)c[3]))>>7);
+	return ((((int64_t)d1 * sens)>>21) - off) >> 15;
+*/
+
+	int64_t dt = d2 - c[5] * (1L<<8);
+
+	int32_t temp = 2000 + (dt * c[6]) / (1L<<23);
+
+	/* Second order temperature compensation */
+	//int64_t t2;
+	//if(temp >= 2000)
+	//{
+	//	/* High temperature */
+	//	t2 = 5 * (dt * dt) / (1LL<<38);
+	//}
+	//else
+	//{
+		/* Low temperature */
+	//	t2 = 3 * (dt * dt) / (1LL<<33);
+	//}
+	//temperature = (float)(temp - t2) / 100;
+
+	int64_t off = c[2] * (1LL<<17) + (c[4] * dt) / (1LL<<6);
+	int64_t sens = c[1] * (1LL<<16) + (c[3] * dt) / (1LL<<7);
 
 	/* Second order temperature compensation for pressure */
 	if(temp < 2000)
@@ -64,8 +108,8 @@ inline int32_t ms5637_get_pressure(int32_t d1, int32_t d2)
 		/* Low temperature */
 		int32_t tx = temp-2000;
 		tx *= tx;
-		int32_t off2 = (61 * tx) >> 4;
-		int32_t sens2 = (29 * tx) >> 4;
+		int32_t off2 = 61 * tx / (1<<4);
+		int32_t sens2 = 29 * tx / (1<<4);
 		if(temp < -1500)
 		{
 			/* Very low temperature */
@@ -78,7 +122,8 @@ inline int32_t ms5637_get_pressure(int32_t d1, int32_t d2)
 		sens -= sens2;
 	}
 
-	return ((((int64_t)d1 * sens)>>21) - off) >> 15;
+	return ((int64_t)d1 * sens/(1LL<<21) - off) / (1LL << 15);
+
 }
 
 #endif /* MS5637_H_ */
