@@ -19,11 +19,10 @@
 
 #include "debug.h"
 
+volatile int t;
 
 int main(void)
 {
-	sei();
-
 	/* enable pull-ups for all unused ports (reduces standby power) */
 	//note: pins are already set as input
 	PORTA = 0x0F;	//all ports
@@ -34,6 +33,19 @@ int main(void)
 	/* further reduce power consumption */
 	power_spi_disable();
 	power_adc_disable();
+
+	/* Switch to 2Mhz */
+	CLKPR = (1<<CLKPCE);
+#if F_CPU == 2000000UL
+	CLKPR = 2;		//div 4 -> 2Mhz
+#elif F_CPU == 1000000UL
+	//no need to change anything
+#else
+	#error adjust prescaler.
+#endif
+
+	/* Enable interrupts */
+	sei();
 
 	/* boot */
 	btn_init();
