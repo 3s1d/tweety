@@ -9,7 +9,7 @@ You can build it on your own or buy it in our [shop](https://www.skytraxx.eu/sho
 ## Operation
 
 ### Turn on
-Press the button until you here a short beep. Release the button within in 3 seconds and Tweety turns on. You will here the welcome sound, followed by 0.5 sec pause and the battery state:
+Press the button until you here a short beep. Release the button within in 1 second and Tweety turns on. You will here the welcome sound, followed by 0.5 sec pause and the battery state:
 - 2 beeps: Battery is good
 - 1 beep: Battery is okay
 - no beep: You should consider changing the battery
